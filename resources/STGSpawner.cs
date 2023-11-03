@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Godot;
 using GodotSTG;
 
@@ -16,10 +17,9 @@ public partial class STGSpawner:Resource{
     [Export] public Vector2 position {get; set;}
     [Export] public PosType position_type {get; set;}
     [Export] public Towards towards {get; set;}
-    [Export] public float rotation {get; set;}
     [Export] public float rotation_speed {get; set;}
 
-    [ExportGroup("Bullet")] 
+    [ExportGroup("Bullet")]
     [Export] public STGBulletModifier bullet {get; set;}
 
     public Vector2 real_pos;
@@ -29,10 +29,10 @@ public partial class STGSpawner:Resource{
     public STGBulletData bdata;
     public Texture2D tex;
 
-    public void spawn(){
+    public async void spawn(){
         STGGlobal = STGGlobal.Instance;
-
-        if (is_running) return; 
+        
+        if (is_running) return;
         is_running = true;
         stop_flag = false;
         bdata = STGGlobal.bltdata[bullet.index];
@@ -43,11 +43,13 @@ public partial class STGSpawner:Resource{
             real_pos = STGGlobal.lerp4arena(position);
         }
         STGGlobal.stop_spawner += _stop_spawner;
-        _spawn();
+        await _spawn();
+        STGGlobal.Instance.EmitSignal("spawner_done");
     }
 
-    public virtual void _spawn(){
+    public async virtual Task _spawn(){
         Debug.Assert(false, "No \"_spawn()\" found.");
+        return;
     }
 
     public void _stop_spawner(){
