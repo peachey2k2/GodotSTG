@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Godot;
@@ -145,7 +143,7 @@ public partial class STGGlobal:Node{
 
         PoolSize.Text = POOL_SIZE.ToString();
         while (true){
-            await Task.Delay(200);
+            await Task.Delay(250);
             Pooled  .Text = bpool   .Count.ToString();
             Active  .Text = blts    .Count.ToString();
             Removing.Text = brem    .Count.ToString();
@@ -180,14 +178,13 @@ public partial class STGGlobal:Node{
         PhysicsServer2D.ShapeSetData(shape.rid, data.collision_radius);
         PhysicsServer2D.AreaSetShapeTransform(area_rid, shape.idx, t);
         PhysicsServer2D.AreaSetShapeDisabled(area_rid, shape.idx, false);
-        if (data.lifespan <= 0) data.lifespan = 999999;
+        if (data.lifespan <= 0) data.lifespan = 9999999;
         blts.Add(data);
     }
 
     public STGBulletData configure_bullet(STGBulletData data){
         STGBulletModifier mod = data.next;
-        data.velocity = data.velocity.Normalized() * mod.speed;
-        data.acceleration = data.acceleration.Normalized() * mod.acceleration;
+        // data.velocity = data.velocity.Normalized() * mod.speed;
         data.lifespan = mod.lifespan > 0 ? mod.lifespan : 999999;
         data.texture = textures[mod.id];
         data.next = mod.next;
@@ -205,9 +202,7 @@ public partial class STGGlobal:Node{
         foreach (STGBulletData blt in blts){
             if (blt.lifespan >= 0) blt.lifespan -= delta;
             else bqueue.Add(blt);
-            blt.velocity += blt.acceleration * fdelta / 2;
-            blt.position += blt.velocity * fdelta;
-            blt.velocity += blt.acceleration * fdelta / 2;
+            blt.position += Vector2.Right.Rotated(blt.direction) * blt.magnitude * fdelta;
             Transform2D t = new(0, blt.position){Origin = blt.position};
             if (!arena_rect_margined.HasPoint(blt.position)){
                 bqueue.Add(blt);
