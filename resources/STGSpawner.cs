@@ -61,18 +61,20 @@ public partial class STGSpawner:Resource{
 
     public void spawn_bullet(Vector2 pos, float dir, float mag){
         STGBulletData _bdata = (STGBulletData)bdata.Duplicate();
+        _bdata.current = 0;
         _bdata.position = pos;
         _bdata.direction = dir;
         _bdata.magnitude = mag;
         _bdata.lifespan = bullet.lifespan;
         _bdata.texture = tex;
         _bdata.next = bullet.next;
-        _bdata.tween = tree.CreateTween();
-        foreach (BulletTween tw in bullet.tweens){
-            _bdata.tween.TweenProperty(_bdata, tw.Property, tw.FinalValue + (tw.Additive ? (float)_bdata.Get(tw.Property) : 0), tw.Duration).SetTrans(tw.Transition);
-            if (tw.Easing >= 0) _bdata.tween.SetEase((Tween.EaseType)tw.Easing);
-            if (tw.Parallelize) _bdata.tween.Parallel();
-        }
+        _bdata.tweens = bullet.tweens;
+        // _bdata.tween = tree.CreateTween();
+        // foreach (BulletTween tw in bullet.tweens){
+        //     _bdata.tween.TweenProperty(_bdata, tw.Property, tw.FinalValue + (tw.Additive ? (float)_bdata.Get(tw.Property) : 0), tw.Duration).SetTrans(tw.Transition);
+        //     if (tw.Easing >= 0) _bdata.tween.SetEase((Tween.EaseType)tw.Easing);
+        //     if (tw.Parallelize) _bdata.tween.Parallel();
+        // }
         STGGlobal.create_bullet(_bdata);
     }
 }

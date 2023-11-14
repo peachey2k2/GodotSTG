@@ -1,4 +1,6 @@
+using System.Transactions;
 using Godot;
+using Godot.Collections;
 using GodotSTG;
 
 [GlobalClass, Icon("res://addons/GodotSTG/assets/bulletdata.png")]
@@ -11,7 +13,8 @@ public partial class STGBulletData:Resource{
     public float direction;
     public float magnitude;
     public double lifespan;
-    public Tween tween;
+    public Array<STGTween> tweens;
+    public int current = 0;
 
     public STGShape shape;
     public STGBulletModifier next;

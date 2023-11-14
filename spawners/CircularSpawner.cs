@@ -38,7 +38,8 @@ public partial class CircularSpawner:STGSpawner{
                 if (stop_flag) return;
                 spawn_bullet(
                     real_pos +  direction * distance,
-                    direction.Angle(), speed 
+                    direction.Angle(),
+					speed
                 );
                 direction = direction.Rotated(gap);
             }

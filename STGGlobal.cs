@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Godot;
 using Godot.Collections;
@@ -93,6 +94,7 @@ public partial class STGGlobal:Node{
     public ulong start = Time.GetTicksUsec();
     public ulong end;
 
+    public static float fdelta = 0.016667F;
     public bool exiting = false;
     public static STGGlobal Instance { get; private set; }
 
@@ -197,11 +199,16 @@ public partial class STGGlobal:Node{
 
     // processing the bullets here.
     public override void _PhysicsProcess(double delta){
-        float fdelta = (float)delta;
         bqueue.Clear();
         foreach (STGBulletData blt in blts){
-            if (blt.lifespan >= 0) blt.lifespan -= delta;
+            if (blt.lifespan >= 0) blt.lifespan -= fdelta;
             else bqueue.Add(blt);
+            foreach (STGTween tw in blt.tweens){
+                if (blt.current < tw.list.Count){
+                    blt.Set(tw.property.ToString(), tw.list[blt.current] + (float)(tw.mode == STGTween.TweenMode.Add ? blt.Get(tw.property.ToString()) : 0));
+                    blt.current++;
+                }
+            }
             blt.position += Vector2.Right.Rotated(blt.direction) * blt.magnitude * fdelta;
             Transform2D t = new(0, blt.position){Origin = blt.position};
             if (!arena_rect_margined.HasPoint(blt.position)){
