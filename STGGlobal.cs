@@ -47,14 +47,24 @@ public partial class STGGlobal:Node{
         new() {
             {"name", "removal_margin"},
             {"default", 100},
+        },
+        new() {
+            {"name", "graze_radius"},
+            {"default", 50},
+        },
+        new() {
+            {"name", "enable_panel_at_start"},
+            {"default", false},
         }
     };
 
     // settings
-    public string BULLET_DIRECTORY;
-    public uint COLLISION_LAYER;
-    public uint POOL_SIZE;
-    public uint REMOVAL_MARGIN;
+    private string BULLET_DIRECTORY;
+    private uint COLLISION_LAYER;
+    private uint POOL_SIZE;
+    private uint REMOVAL_MARGIN;
+    private float GRAZE_RADIUS;
+    private bool ENABLE_PANEL_AT_START;
 
     // low level tomfuckery
     public List<STGBulletData> blts = new();
@@ -73,7 +83,7 @@ public partial class STGGlobal:Node{
             shared_area.CollisionLayer = COLLISION_LAYER;
         }
     }
-    public Rid area_rid;
+    public Rid area_rid {private set; get;}
     private Rect2 _arena_rect;
     public Rect2 arena_rect {
         get{ return _arena_rect; }
@@ -91,13 +101,14 @@ public partial class STGGlobal:Node{
     public float clock_real;
     public SceneTreeTimer clock_timer;
     public SceneTreeTimer clock_real_timer;
-    public ulong fps;
-    public ulong _fps = 1;
+    public ulong fps {private set; get;}
+    private ulong _fps = 1;
     public ulong start = Time.GetTicksUsec();
     public ulong end;
+    public int graze_counter {private set; get;}
 
-    public static float fdelta = 0.016667F;
-    public bool exiting = false;
+    private static float fdelta = 0.016667F;
+    private bool exiting = false;
     public static STGGlobal Instance { get; private set; }
 
     public STGGlobal(){
@@ -106,8 +117,12 @@ public partial class STGGlobal:Node{
         }
     }
 
+    AudioStreamPlayer spawn_audio;
+    AudioStreamPlayer graze_audio;
+
     public override async void _Ready(){
         Instance = this; // epic self-reference to access the singleton from everywhere
+        battle_start += _on_battle_start;
 
         // there is no @onready in c# :sadge: 
         area_template = (PackedScene)ResourceLoader.Load("res://addons/GodotSTG/resources/shared_area.tscn");
@@ -129,15 +144,28 @@ public partial class STGGlobal:Node{
             bpool.Add(new STGShape(shape_rid, i));
         }
 
-        // initialize the threads
-        
-
         // global clocks cuz yeah
         clock_timer      = GetTree().CreateTimer(TIMER_START, false);
         clock_real_timer = GetTree().CreateTimer(TIMER_START, true);
 
+        // audio setup
+        spawn_audio = new(){
+            MaxPolyphony = 2,
+            Stream = (AudioStream)ResourceLoader.Load("res://addons/GodotSTG/assets/spawn.ogg"),
+            PitchScale = 1.5F
+        };
+        graze_audio = new(){
+            MaxPolyphony = 50,
+            Stream = (AudioStream)ResourceLoader.Load("res://addons/GodotSTG/assets/graze.ogg"),
+            PitchScale = 1.2F,
+            VolumeDb = -20 // ah yes, negative sound
+        };
+        AddChild(spawn_audio);
+        AddChild(graze_audio);
+
         // panel
         panel = (CanvasLayer)((PackedScene)ResourceLoader.Load("res://addons/GodotSTG/panel.tscn")).Instantiate();
+        if (ENABLE_PANEL_AT_START) panel.Show();
         AddChild(panel);
         Label PoolSize = (Label)panel.GetNode("Panel/VBoxContainer/PoolSize/count");
         Label Pooled   = (Label)panel.GetNode("Panel/VBoxContainer/Pooled/count");
@@ -155,6 +183,10 @@ public partial class STGGlobal:Node{
             Textures.Text = textures.Count.ToString();
             FPS     .Text = fps           .ToString();
         }
+    }
+
+    void _on_battle_start(){
+        graze_counter = 0;
     }
 
     // messy fps calculation
@@ -185,6 +217,7 @@ public partial class STGGlobal:Node{
         PhysicsServer2D.AreaSetShapeDisabled(area_rid, shape.idx, false);
         if (data.lifespan <= 0) data.lifespan = 9999999;
         blts.Add(data);
+        spawn_audio.Play();
     }
 
     public STGBulletData configure_bullet(STGBulletData data){
@@ -219,6 +252,11 @@ public partial class STGGlobal:Node{
             if (!arena_rect_margined.HasPoint(blt.position)){
                 bqueue.Add(blt);
                 blt.next = null;
+            }
+            if (!blt.grazed && blt.position.DistanceTo(player_pos) - blt.collision_radius < GRAZE_RADIUS){
+                blt.grazed = true;
+                graze_counter++;
+                graze_audio.CallDeferred(AudioStreamPlayer.MethodName.Play);
             }
             PhysicsServer2D.AreaSetShapeTransform(area_rid, blt.shape.idx, t);
         });

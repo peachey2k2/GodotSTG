@@ -1,14 +1,19 @@
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Reflection;
 using Godot;
-using GodotSTG;
+using Godot.Collections;
 
 namespace GodotSTG;
 
-[GlobalClass]
+[GlobalClass, Tool]
 public partial class STGTween:Resource{
     public enum TweenProperty {magnitude, direction, homing}
+    [Export] public bool test{
+        get{ return false; }
+        set{
+            foreach (Dictionary p in GetPropertyList())
+            GD.Print(p);
+        }
+    }
     public enum TweenMode {Set, Add}
     public StringName property_str;
     private TweenProperty _property;

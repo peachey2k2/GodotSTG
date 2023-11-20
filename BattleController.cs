@@ -44,8 +44,8 @@ public partial class BattleController:Node2D{
         STGGlobal.clear();
         STGGlobal.shared_area.Reparent(this, false);
         STGGlobal.controller = this;
-        STGGlobal.EmitSignal(STGGlobal.SignalName.battle_start);
         STGGlobal.arena_rect = arena_rect;
+        STGGlobal.EmitSignal(STGGlobal.SignalName.battle_start);
         int bar_count = stats.bars.Count;
         STGGlobal.EmitSignal(STGGlobal.SignalName.bar_changed, bar_count);
         life = 0;

@@ -16,6 +16,7 @@ public partial class STGBulletData:Resource{
     public double lifespan;
     public Array<STGTween> tweens;
     public int current = 0;
+    public bool grazed = false;
 
     public STGShape shape;
     public STGBulletModifier next;

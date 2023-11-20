@@ -33,6 +33,20 @@ public partial class plugin:EditorPlugin{
 			{"type", (int)Variant.Type.Int},
 			{"hint", (int)PropertyHint.Range},
 			{"hint_string", "100,20000,1,or_greater"}
+		},
+		new(){
+			{"name", "graze_radius"},
+			{"default", 50},
+			{"type", (int)Variant.Type.Float},
+			{"hint", (int)PropertyHint.Range},
+			{"hint_string", "1,200,0.25,or_greater"}
+		},
+		new(){
+			{"name", "enable_panel_at_start"},
+			{"default", false},
+			{"type", (int)Variant.Type.Bool},
+			{"hint", (int)PropertyHint.None},
+			{"hint_string", ""}
 		}
 	};
 
