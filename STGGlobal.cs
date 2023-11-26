@@ -31,6 +31,7 @@ public partial class STGGlobal:Node{
     public BattleController controller {get; set;}
     public CanvasLayer panel;
 
+    // lists for default settings
     System.Collections.Generic.Dictionary<string, Variant>[] settings = {
         new() {
             {"name", "bullet_directory"},
@@ -57,6 +58,16 @@ public partial class STGGlobal:Node{
             {"default", false},
         }
     };
+    System.Collections.Generic.Dictionary<string, Variant>[] sounds = {
+        // new() {
+        //     {"name", "spawn"},
+        //     {"default", "res://addons/GodotSTG/assets/spawn.ogg"},
+        // },
+        new() {
+            {"name", "graze"},
+            {"default", "res://addons/GodotSTG/assets/graze.ogg"},
+        }
+    };
 
     // settings
     private string BULLET_DIRECTORY;
@@ -65,6 +76,8 @@ public partial class STGGlobal:Node{
     private uint REMOVAL_MARGIN;
     private float GRAZE_RADIUS;
     private bool ENABLE_PANEL_AT_START;
+    // private AudioStream SFX_SPAWN;
+    private AudioStream SFX_GRAZE;
 
     // low level tomfuckery
     public List<STGBulletData> blts = new();
@@ -113,11 +126,14 @@ public partial class STGGlobal:Node{
 
     public STGGlobal(){
         foreach (System.Collections.Generic.Dictionary<String, Variant> _setting in settings){
-            Set(((string)_setting["name"]).ToUpper(), ProjectSettings.GetSetting("godotstg/" + _setting["name"], _setting["default"]));
+            Set(((string)_setting["name"]).ToUpper(), ProjectSettings.GetSetting("godotstg/general/" + _setting["name"], _setting["default"]));
+        }
+        foreach (System.Collections.Generic.Dictionary<String, Variant> _setting in sounds){
+            Set(("SFX_" + (string)_setting["name"]).ToUpper(), ResourceLoader.Load((string)ProjectSettings.GetSetting("godotstg/sfx/" + _setting["name"], _setting["default"])));
         }
     }
 
-    AudioStreamPlayer spawn_audio;
+    // AudioStreamPlayer spawn_audio;
     AudioStreamPlayer graze_audio;
 
     public override async void _Ready(){
@@ -149,18 +165,19 @@ public partial class STGGlobal:Node{
         clock_real_timer = GetTree().CreateTimer(TIMER_START, true);
 
         // audio setup
-        spawn_audio = new(){
-            MaxPolyphony = 2,
-            Stream = (AudioStream)ResourceLoader.Load("res://addons/GodotSTG/assets/spawn.ogg"),
-            PitchScale = 1.5F
-        };
+        // spawn_audio = new(){
+        //     MaxPolyphony = 100,
+        //     Stream = SFX_SPAWN,
+        //     PitchScale = 1.0F,
+        //     VolumeDb = -5 // ah yes, negative sound
+        // };
         graze_audio = new(){
             MaxPolyphony = 50,
-            Stream = (AudioStream)ResourceLoader.Load("res://addons/GodotSTG/assets/graze.ogg"),
-            PitchScale = 1.2F,
+            Stream = SFX_GRAZE,
+            PitchScale = 1.0F,
             VolumeDb = -20 // ah yes, negative sound
         };
-        AddChild(spawn_audio);
+        // AddChild(spawn_audio);
         AddChild(graze_audio);
 
         // panel
@@ -187,6 +204,11 @@ public partial class STGGlobal:Node{
 
     void _on_battle_start(){
         graze_counter = 0;
+    }
+
+
+    public void _property_changed(){
+
     }
 
     // messy fps calculation
@@ -217,7 +239,7 @@ public partial class STGGlobal:Node{
         PhysicsServer2D.AreaSetShapeDisabled(area_rid, shape.idx, false);
         if (data.lifespan <= 0) data.lifespan = 9999999;
         blts.Add(data);
-        spawn_audio.Play();
+        // spawn_audio.Play();
     }
 
     public STGBulletData configure_bullet(STGBulletData data){

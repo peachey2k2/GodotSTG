@@ -47,7 +47,21 @@ public partial class plugin:EditorPlugin{
 			{"type", (int)Variant.Type.Bool},
 			{"hint", (int)PropertyHint.None},
 			{"hint_string", ""}
-		}
+		},
+		// new(){
+		// 	{"name", "sfx_spawn"},
+		// 	{"default", "res://addons/GodotSTG/assets/spawn.ogg"},
+		// 	{"type", (int)Variant.Type.String},
+		// 	{"hint", (int)PropertyHint.File},
+		// 	{"hint_string", ""}
+		// },
+		new(){
+			{"name", "sfx_graze"},
+			{"default", "res://addons/GodotSTG/assets/graze.ogg"},
+			{"type", (int)Variant.Type.String},
+			{"hint", (int)PropertyHint.File},
+			{"hint_string", ""}
+		},
 	};
 
 	public override void _EnterTree(){
@@ -82,7 +96,7 @@ public partial class plugin:EditorPlugin{
 	}
 
 	public string _get_setting_path(Dictionary _setting){
-		return "godotstg/" + _setting["name"];
+		return "godotstg/" + (((string)_setting["name"]).StartsWith("sfx_") ? "sfx/" : "general/") + ((string)_setting["name"]).TrimPrefix("sfx_");
 	}
 
 	public void _clear_settings(){

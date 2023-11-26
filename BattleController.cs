@@ -61,9 +61,9 @@ public partial class BattleController:Node2D{
                 STGGlobal.EmitSignal(STGGlobal.SignalName.spell_name_changed);
                 // enemy.Monitoring = true;
                 cache_spell_textures(curr_spell);
-                flag += 1; // timer await is encapsulated in flag increments and decrements
+                flag++; // timer await is encapsulated in flag increments and decrements
                 await ToSignal(GetTree().CreateTimer(curr_spell.wait_before, false), "timeout");
-                flag -= 1; // to prevent running multiple instances at the same time
+                flag--; // to prevent running multiple instances at the same time
                 if (flag > 0) return;
                 while (!is_spell_over){
                     foreach (STGSequence curr_sequence in curr_spell.sequences){
@@ -71,10 +71,10 @@ public partial class BattleController:Node2D{
                         hp_threshold = curr_sequence.end_at_hp;
                         time_threshold = curr_sequence.end_at_time;
                         curr_sequence.spawn_sequence();
-                        flag += 1; // timer await is encapsulated in flag increments and decrements
+                        flag++; // timer await is encapsulated in flag increments and decrements
                         await ToSignal(STGGlobal, STGGlobal.SignalName.end_sequence); //
-                        await ToSignal(GetTree().CreateTimer(curr_spell.wait_between, false), "timeout");
-                        flag -= 1; // to prevent running multiple instances at the same time
+                        await ToSignal(GetTree().CreateTimer(curr_spell.wait_between, false), "timeout"); //
+                        flag--; // to prevent running multiple instances at the same time
                         if (flag > 0) return;
                         if ((curr_spell.sequence_flags&4) == 4) STGGlobal.clear();
                     }

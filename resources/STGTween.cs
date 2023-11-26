@@ -4,16 +4,9 @@ using Godot.Collections;
 
 namespace GodotSTG;
 
-[GlobalClass, Tool]
+[GlobalClass]
 public partial class STGTween:Resource{
     public enum TweenProperty {magnitude, direction, homing}
-    [Export] public bool test{
-        get{ return false; }
-        set{
-            foreach (Dictionary p in GetPropertyList())
-            GD.Print(p);
-        }
-    }
     public enum TweenMode {Set, Add}
     public StringName property_str;
     private TweenProperty _property;
