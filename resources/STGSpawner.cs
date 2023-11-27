@@ -17,7 +17,6 @@ public partial class STGSpawner:Resource{
     [ExportGroup("Spawner")]
     [Export] public Vector2 position {get; set;}
     [Export] public PosType position_type {get; set;}
-    [Export] public Towards towards {get; set;}
     [Export] public float rotation_speed {get; set;}
 
     [ExportGroup("Bullet")]
@@ -51,6 +50,7 @@ public partial class STGSpawner:Resource{
 
     public async virtual Task _spawn(){
         Debug.Assert(false, "No \"_spawn()\" found.");
+        await Task.Delay(0); // literally a useless task to prevent a warning. thanks c#
         return;
     }
 
@@ -69,12 +69,6 @@ public partial class STGSpawner:Resource{
         _bdata.texture = tex;
         _bdata.next = bullet.next;
         _bdata.tweens = bullet.tweens;
-        // _bdata.tween = tree.CreateTween();
-        // foreach (BulletTween tw in bullet.tweens){
-        //     _bdata.tween.TweenProperty(_bdata, tw.Property, tw.FinalValue + (tw.Additive ? (float)_bdata.Get(tw.Property) : 0), tw.Duration).SetTrans(tw.Transition);
-        //     if (tw.Easing >= 0) _bdata.tween.SetEase((Tween.EaseType)tw.Easing);
-        //     if (tw.Parallelize) _bdata.tween.Parallel();
-        // }
         STGGlobal.create_bullet(_bdata);
     }
 }

@@ -144,6 +144,7 @@ public partial class STGGlobal:Node{
         area_template = (PackedScene)ResourceLoader.Load("res://addons/GodotSTG/resources/shared_area.tscn");
         remove_template = (Texture2D)ResourceLoader.Load("res://addons/GodotSTG/assets/remove.png");
 
+        // loading and preparing all the bullets
         foreach (string file in DirAccess.GetFilesAt(BULLET_DIRECTORY)){
             bltdata.Add((STGBulletData)ResourceLoader.Load((BULLET_DIRECTORY + "/" + file).TrimSuffix(".remap"))); // builds use .remap extension so that is trimmed here
             // you can look at this issue for more info: https://github.com/godotengine/godot/issues/66014
@@ -251,6 +252,7 @@ public partial class STGGlobal:Node{
     }
 
     public override void _UnhandledInput(InputEvent @event){
+        // programmer challenge: if you can't make out what this line does, quit programming lmao \s unless
         if (InputMap.HasAction(stg_info) && Input.IsActionJustPressed(stg_info)) panel.Visible = !panel.Visible;
     }
 
@@ -316,11 +318,22 @@ public partial class STGGlobal:Node{
     public void create_texture(STGBulletModifier mod){
         if (mod.id != -1) return; // #todo: also check whether this exact texture is already saved (same index and colors)
         Texture2D tex = (Texture2D)bltdata[mod.index].texture.Duplicate(); // lol
+
         if (tex is GradientTexture2D){
             GradientTexture2D gradientTex = tex as GradientTexture2D;
             gradientTex.Gradient = gradientTex.Gradient.Duplicate() as Gradient;
-            gradientTex.Gradient.Colors = new[] {mod.inner_color, mod.inner_color, mod.outer_color, mod.outer_color, Colors.Transparent};
+            for (int i = 0; i < gradientTex.Gradient.Colors.Length; i++){
+                // we use Color.V since we use black&white colors
+                float v = gradientTex.Gradient.Colors[i].V;
+                Color newCol = (mod.inner_color * v) + (mod.outer_color * (1-v));
+                newCol.A = gradientTex.Gradient.Colors[i].A;
+                gradientTex.Gradient.SetColor(i, newCol);
+            }
+        } else if (tex is CompressedTexture2D){
+            CompressedTexture2D compressedTex = tex as CompressedTexture2D;
+            // i don't even think this part will be necessary but yeah, non-gradient textures work too.
         }
+
         mod.id = textures.Count;
         textures.Add(tex);
     }
