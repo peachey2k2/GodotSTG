@@ -1,3 +1,8 @@
+// uncomment this define if you want to use the compatibilty renderer.
+// this way, the plugin will use CanvasItem.DrawTexture() instead of
+// CanvasItem.DrawMultimesh() so that it works with OpenGL.
+#define COMPATIBILITY_RENDERER
+
 using Godot;
 using GodotSTG;
 using Godot.Collections;
@@ -35,6 +40,11 @@ public partial class BattleController:Node2D{
         STGGlobal.bar_emptied += _on_bar_emptied;
         STGGlobal.damage_taken += _on_damage_taken;
         AddChild(timer);
+
+        Material = new ShaderMaterial(){
+            Shader = (Shader)ResourceLoader.Load("res://BulletAnim.gdshader")
+        };
+        
     }
 
     public async void start(){
@@ -118,13 +128,14 @@ public partial class BattleController:Node2D{
     }
 
     public override void _Draw(){
-        // Parallel.ForEach(STGGlobal.blts, blt => {
-        //     DrawSetTransform(blt.position, blt.direction);
-        //     DrawTexture(blt.texture, -blt.texture.GetSize() / 2);
-        // }); NOTE TO SELF: DO NOT PARALLELIZE THIS. JUST DON'T.
+        // NOTE TO SELF: DO NOT PARALLELIZE THIS. JUST DON'T.
         foreach (STGBulletData blt in STGGlobal.blts){
+            #if COMPATIBILITY_RENDERER
             DrawSetTransform(blt.position, blt.direction);
             DrawTexture(blt.texture, -blt.texture.GetSize() / 2);
+            #else
+            // DrawMultimesh();
+            #endif
         }
         DrawSetTransform(Vector2.Zero, 0);
         foreach (STGBulletData blt in STGGlobal.brem){

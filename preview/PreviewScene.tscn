@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://carikoua6ss05"]
+
+[ext_resource type="Texture2D" uid="uid://33qc36xfaf85" path="res://icon.png" id="1_74m16"]
+[ext_resource type="Script" path="res://addons/GodotSTG/preview/PreviewScene.cs" id="1_fpnra"]
+
+[node name="PreviewScene" type="TextureRect"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_fpnra")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(33, 33)
+texture = ExtResource("1_74m16")

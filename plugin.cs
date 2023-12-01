@@ -64,13 +64,17 @@ public partial class plugin:EditorPlugin{
 		},
 	};
 
+	STGBulletPreview preview = new();
+
 	public override void _EnterTree(){
 		AddAutoloadSingleton("STGGlobal", "res://addons/GodotSTG/STGGlobal.cs");
+		AddInspectorPlugin(preview);
 		_setup_settings();
 	}
 
 	public override void _ExitTree(){
 		RemoveAutoloadSingleton("STGGlobal");
+		RemoveInspectorPlugin(preview);
 	}
 
     public override void _DisablePlugin(){

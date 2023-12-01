@@ -1,3 +1,8 @@
+// uncomment this define if you want to use the compatibilty renderer.
+// this way, the plugin will use CanvasItem.DrawTexture() instead of
+// CanvasItem.DrawMultimesh() so that it works with OpenGL.
+#define COMPATIBILITY_RENDERER
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,6 +10,7 @@ using System.Threading.Tasks;
 using Godot;
 using Godot.Collections;
 using GodotSTG;
+
 
 public partial class STGGlobal:Node{
 
@@ -125,10 +131,10 @@ public partial class STGGlobal:Node{
     public static STGGlobal Instance { get; private set; }
 
     public STGGlobal(){
-        foreach (System.Collections.Generic.Dictionary<String, Variant> _setting in settings){
+        foreach (System.Collections.Generic.Dictionary<string, Variant> _setting in settings){
             Set(((string)_setting["name"]).ToUpper(), ProjectSettings.GetSetting("godotstg/general/" + _setting["name"], _setting["default"]));
         }
-        foreach (System.Collections.Generic.Dictionary<String, Variant> _setting in sounds){
+        foreach (System.Collections.Generic.Dictionary<string, Variant> _setting in sounds){
             Set(("SFX_" + (string)_setting["name"]).ToUpper(), ResourceLoader.Load((string)ProjectSettings.GetSetting("godotstg/sfx/" + _setting["name"], _setting["default"])));
         }
     }

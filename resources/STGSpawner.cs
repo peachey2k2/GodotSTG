@@ -48,11 +48,12 @@ public partial class STGSpawner:Resource{
         STGGlobal.Instance.EmitSignal("spawner_done");
     }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     public async virtual Task _spawn(){
         Debug.Assert(false, "No \"_spawn()\" found.");
-        await Task.Delay(0); // literally a useless task to prevent a warning. thanks c#
         return;
     }
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 
     public void _stop_spawner(){
         stop_flag = true;
