@@ -1,9 +1,3 @@
-// uncomment this define if you want to use the compatibilty renderer.
-// this way, the plugin will use CanvasItem.DrawTexture() instead of
-// CanvasItem.DrawMultimesh() so that it works with OpenGL.
-#define COMPATIBILITY_RENDERER
-
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -92,7 +86,6 @@ public partial class STGGlobal:Node{
     public List<STGBulletData> bltdata = new();
     public List<Texture2D> textures = new();
     public List<STGBulletData> brem = new();
-
     private Area2D _shared_area;
     public Area2D shared_area {
         get{ return _shared_area; }
@@ -152,7 +145,8 @@ public partial class STGGlobal:Node{
 
         // loading and preparing all the bullets
         foreach (string file in DirAccess.GetFilesAt(BULLET_DIRECTORY)){
-            bltdata.Add((STGBulletData)ResourceLoader.Load((BULLET_DIRECTORY + "/" + file).TrimSuffix(".remap"))); // builds use .remap extension so that is trimmed here
+            bltdata.Add((STGBulletData)ResourceLoader.Load((BULLET_DIRECTORY + "/" + file).TrimSuffix(".remap")));
+            // builds use .remap extension so that is trimmed here
             // you can look at this issue for more info: https://github.com/godotengine/godot/issues/66014
             // also this will probably change in a later release for the engine
         }
@@ -211,11 +205,6 @@ public partial class STGGlobal:Node{
 
     void _on_battle_start(){
         graze_counter = 0;
-    }
-
-
-    public void _property_changed(){
-
     }
 
     // messy fps calculation
@@ -316,9 +305,7 @@ public partial class STGGlobal:Node{
     }
 
     private static float Clamp(float value, float min, float max){
-        if (value >= max) return max;
-        if (value <= min) return min;
-        return value;
+        return value >= max ? max : (value <= min ? min : value);
     }
 
     public void create_texture(STGBulletModifier mod){

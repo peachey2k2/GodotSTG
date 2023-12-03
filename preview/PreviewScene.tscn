@@ -1,16 +1,94 @@
-[gd_scene load_steps=3 format=3 uid="uid://carikoua6ss05"]
+[gd_scene load_steps=10 format=3 uid="uid://carikoua6ss05"]
 
 [ext_resource type="Texture2D" uid="uid://33qc36xfaf85" path="res://icon.png" id="1_74m16"]
 [ext_resource type="Script" path="res://addons/GodotSTG/preview/PreviewScene.cs" id="1_fpnra"]
+[ext_resource type="Shader" path="res://addons/GodotSTG/BulletModulate.gdshader" id="2_72euc"]
 
-[node name="PreviewScene" type="TextureRect"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[sub_resource type="Gradient" id="Gradient_gnc3p"]
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_rux3h"]
+gradient = SubResource("Gradient_gnc3p")
+fill_from = Vector2(1, 1)
+fill_to = Vector2(0, 0)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_tjh0p"]
+shader = ExtResource("2_72euc")
+shader_parameter/modulate = Color(0, 0, 0, 1)
+
+[sub_resource type="Gradient" id="Gradient_nteaa"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.97, 1)
+colors = PackedColorArray(0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_acxu2"]
+gradient = SubResource("Gradient_nteaa")
+width = 192
+height = 192
+fill = 2
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0, 0.5)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_khadi"]
+radius = 40.0
+
+[node name="PreviewScene" type="Control"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 192.0
+offset_bottom = 192.0
 script = ExtResource("1_fpnra")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(33, 33)
+[node name="Background" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -96.0
+offset_top = -96.0
+offset_right = 96.0
+offset_bottom = 96.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture2D_rux3h")
+
+[node name="Bullet" type="TextureRect" parent="."]
+material = SubResource("ShaderMaterial_tjh0p")
+custom_minimum_size = Vector2(160, 160)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+grow_horizontal = 2
+grow_vertical = 2
 texture = ExtResource("1_74m16")
+
+[node name="Outline" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -96.0
+offset_top = -96.0
+offset_right = 96.0
+offset_bottom = 96.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture2D_acxu2")
+stretch_mode = 4
+
+[node name="Hitbox" type="CollisionShape2D" parent="Outline"]
+position = Vector2(96, 96)
+shape = SubResource("CircleShape2D_khadi")
