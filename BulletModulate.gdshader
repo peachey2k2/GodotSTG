@@ -17,32 +17,15 @@ render_mode unshaded;
 // uniform variables are exported. we also need to
 // clarify the hint so we have a color picker in the editor.
 // both colors and coords use vectors. keep that in mind.
-uniform vec4 modulate : source_color = vec4(0.0);
+uniform vec3 black : source_color = vec3(0.0);
+uniform vec3 white : source_color = vec3(1.0);
 
-// you probably already know what a constant is.
-const vec3 GRAYSCALE_CONSTANT = vec3(0.2126, 0.7152, 0.0722);
-
-// fragment shaders are ran for every pixel.
+// fragment shaders run for every pixel.
 void fragment(){
 	
-	// deranged vector math to grayscale. below is the source:
-	// https://stackoverflow.com/a/6895473
-	COLOR.rgb = vec3(dot(COLOR.rgb, GRAYSCALE_CONSTANT));
-	// if you don't get it, don't worry. i didn't either.
+	// simple vector math to grayscale values
+	float g = (COLOR.r + COLOR.g + COLOR.b) / 3.0;
 	
-	// invert the image by subtracting the colors from 1
-	COLOR.rgb = 1.0 - COLOR.rgb;
-	// we inverted the colors because that keeps the
-	// black part the same after a modulation
-
-	// also speaking of modulation...
-	COLOR.rgb = COLOR.rgb * (1.0 - modulate.rgb);
-	// also note that we inverted the modulation color too
-
-	// revert the inversion
-	COLOR.rgb = 1.0 - COLOR.rgb;
-	
-	// apply alpha
-	COLOR.a -= 1.0 - modulate.a;
-	
+	// use grayscale values to replace blacks and whites
+	COLOR.rgb = g * white + (1.0-g) * black;
 }

@@ -311,21 +311,23 @@ public partial class STGGlobal:Node{
     public void create_texture(STGBulletModifier mod){
         if (mod.id != -1) return; // #todo: also check whether this exact texture is already saved (same index and colors)
         Texture2D tex = (Texture2D)bltdata[mod.index].texture.Duplicate(); // lol
+        
+            
 
-        if (tex is GradientTexture2D){
-            GradientTexture2D gradientTex = tex as GradientTexture2D;
-            gradientTex.Gradient = gradientTex.Gradient.Duplicate() as Gradient;
-            for (int i = 0; i < gradientTex.Gradient.Colors.Length; i++){
-                // we use Color.V since we use black&white colors
-                float v = gradientTex.Gradient.Colors[i].V;
-                Color newCol = (mod.inner_color * v) + (mod.outer_color * (1-v));
-                newCol.A = gradientTex.Gradient.Colors[i].A;
-                gradientTex.Gradient.SetColor(i, newCol);
-            }
-        } else if (tex is CompressedTexture2D){
-            CompressedTexture2D compressedTex = tex as CompressedTexture2D;
-            // i don't even think this part will be necessary but yeah, non-gradient textures work too.
-        }
+        // if (tex is GradientTexture2D){
+        //     GradientTexture2D gradientTex = tex as GradientTexture2D;
+        //     gradientTex.Gradient = gradientTex.Gradient.Duplicate() as Gradient;
+        //     for (int i = 0; i < gradientTex.Gradient.Colors.Length; i++){
+        //         // we use Color.V since we use black&white colors
+        //         float v = gradientTex.Gradient.Colors[i].V;
+        //         Color newCol = (mod.inner_color * v) + (mod.outer_color * (1-v));
+        //         newCol.A = gradientTex.Gradient.Colors[i].A;
+        //         gradientTex.Gradient.SetColor(i, newCol);
+        //     }
+        // } else if (tex is CompressedTexture2D){
+        //     CompressedTexture2D compressedTex = tex as CompressedTexture2D;
+        //     // i don't even think this part will be necessary but yeah, non-gradient textures work too.
+        // }
 
         mod.id = textures.Count;
         textures.Add(tex);

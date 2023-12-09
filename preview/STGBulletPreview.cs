@@ -20,7 +20,8 @@ public partial class STGBulletPreview : EditorInspectorPlugin{
         (@object as STGBulletData).UpdateTexture();
         (@object as STGBulletData).UpdateHitbox();
         (@object as STGBulletData).show_hitbox = true;
-        (@object as STGBulletData).color = new(0, 0, 0, 1);
+        (@object as STGBulletData).black = new(0, 0, 0, 1);
+        (@object as STGBulletData).white = new(1, 1, 1, 1);
     }
 
     public override bool _ParseProperty(GodotObject @object, Variant.Type type, string name, PropertyHint hintType, string hintString, PropertyUsageFlags usageFlags, bool wide){

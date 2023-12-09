@@ -34,20 +34,30 @@ public partial class STGBulletData:Resource{
         }
         get{ return _collision_radius; }
     }
-    
+
 #if TOOLS
     public PreviewScene preview;
 
     [ExportCategory("Preview")]
-    private Color _color = new(0, 0, 0, 1);
-    [Export] public Color color{
+    private Color _black = new(0, 0, 0, 1);
+    [Export(PropertyHint.ColorNoAlpha)] public Color black{
         set{
-            _color = value;
+            _black = value;
             if (IsInstanceValid(preview)){
                 UpdateColor();
             }
         }
-        get{ return _color; }
+        get{ return _black; }
+    }
+    private Color _white = new(1, 1, 1, 1);
+    [Export(PropertyHint.ColorNoAlpha)] public Color white{
+        set{
+            _white = value;
+            if (IsInstanceValid(preview)){
+                UpdateColor();
+            }
+        }
+        get{ return _white; }
     }
     private bool _show_hitbox = true;
     [Export] public bool show_hitbox{
@@ -69,7 +79,8 @@ public partial class STGBulletData:Resource{
     }
 
     public void UpdateColor(){
-        ((ShaderMaterial)preview.Bullet.Material).SetShaderParameter("modulate", color);
+        ((ShaderMaterial)preview.Bullet.Material).SetShaderParameter("black", black);
+        ((ShaderMaterial)preview.Bullet.Material).SetShaderParameter("white", white);
     }
 #endif
 

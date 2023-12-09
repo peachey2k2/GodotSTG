@@ -13,7 +13,8 @@ fill_to = Vector2(0, 0)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_tjh0p"]
 shader = ExtResource("2_72euc")
-shader_parameter/modulate = Color(0, 0, 0, 1)
+shader_parameter/black = Color(0, 0, 0, 1)
+shader_parameter/white = Color(1, 1, 1, 1)
 
 [sub_resource type="Gradient" id="Gradient_nteaa"]
 interpolation_mode = 1
