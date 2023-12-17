@@ -48,6 +48,13 @@ public partial class plugin:EditorPlugin{
 			{"hint", (int)PropertyHint.None},
 			{"hint_string", ""}
 		},
+		new(){
+			{"name", "multimesh_count"},
+			{"default", 10},
+			{"type", (int)Variant.Type.Int},
+			{"hint", (int)PropertyHint.Range},
+			{"hint_string", "1,50,1,or_greater"}
+		},
 		// new(){
 		// 	{"name", "sfx_spawn"},
 		// 	{"default", "res://addons/GodotSTG/assets/spawn.ogg"},

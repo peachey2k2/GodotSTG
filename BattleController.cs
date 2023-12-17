@@ -37,7 +37,7 @@ public partial class BattleController:Node2D{
         AddChild(timer);
 
         Material = new ShaderMaterial(){
-            Shader = (Shader)ResourceLoader.Load("res://BulletAnim.gdshader")
+            Shader = (Shader)ResourceLoader.Load("res://addons/GodotSTG/BulletAnim.gdshader")
         };
         
     }
@@ -65,7 +65,7 @@ public partial class BattleController:Node2D{
                 timer.Start();
                 STGGlobal.EmitSignal(STGGlobal.SignalName.spell_name_changed);
                 // enemy.Monitoring = true;
-                cache_spell_textures(curr_spell);
+                // cache_spell_textures(curr_spell);
                 flag++; // timer await is encapsulated in flag increments and decrements
                 await ToSignal(GetTree().CreateTimer(curr_spell.wait_before, false), "timeout");
                 flag--; // to prevent running multiple instances at the same time
@@ -95,18 +95,18 @@ public partial class BattleController:Node2D{
         STGGlobal.EmitSignal(STGGlobal.SignalName.end_battle);
     }
 
-    public void cache_spell_textures(STGSpell spell){
-        foreach (STGSequence seq in spell.sequences){
-            foreach (STGSpawner spw in seq.spawners){
-                STGBulletModifier blt = spw.bullet;
-                while (true){
-                    STGGlobal.create_texture(blt);
-                    if (blt.next == null) break;
-                    blt = blt.next;
-                }
-            }
-        }
-    }
+    // public void cache_spell_textures(STGSpell spell){
+    //     foreach (STGSequence seq in spell.sequences){
+    //         foreach (STGSpawner spw in seq.spawners){
+    //             STGBulletModifier blt = spw.bullet;
+    //             while (true){
+    //                 STGGlobal.create_texture(blt);
+    //                 if (blt.next == null) break;
+    //                 blt = blt.next;
+    //             }
+    //         }
+    //     }
+    // }
 
     public async void kill(){
         ProcessMode = ProcessModeEnum.Disabled;
@@ -123,10 +123,17 @@ public partial class BattleController:Node2D{
     }
 
     public override void _Draw(){
-        // NOTE TO SELF: DO NOT PARALLELIZE THIS. JUST DON'T.
-        foreach (STGBulletData blt in STGGlobal.blts){
-            DrawSetTransform(blt.position, blt.direction);
-            DrawTexture(blt.texture, -blt.texture.GetSize() / 2);
+        Parallel.ForEach(STGGlobal.mmpool, mm => {
+            mm.multimesh.VisibleInstanceCount = mm.bullets.Count;
+            if (mm.multimesh.VisibleInstanceCount == 0) return;
+            for (int i = 0; i < mm.bullets.Count; i++){
+                STGBulletData blt = mm.bullets[i];
+                mm.multimesh.SetInstanceTransform2D(i, new Transform2D(blt.direction, blt.position));
+            }
+        });
+        // canvasitem functions are not thread-safe i think
+        foreach (STGMultiMesh mm in STGGlobal.mmpool){
+            DrawMultimesh(mm.multimesh, mm.texture);
         }
     }
 

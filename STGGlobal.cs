@@ -56,6 +56,10 @@ public partial class STGGlobal:Node{
         new() {
             {"name", "enable_panel_at_start"},
             {"default", false},
+        },
+        new() {
+            {"name", "multimesh_count"},
+            {"default", 10},
         }
     };
     System.Collections.Generic.Dictionary<string, Variant>[] sounds = {
@@ -76,16 +80,17 @@ public partial class STGGlobal:Node{
     private uint REMOVAL_MARGIN;
     private float GRAZE_RADIUS;
     private bool ENABLE_PANEL_AT_START;
+    private uint MULTIMESH_COUNT;
     // private AudioStream SFX_SPAWN;
     private AudioStream SFX_GRAZE;
 
     // low level tomfuckery
-    public List<STGBulletData> blts = new();
     public List<STGShape> bpool = new();
     public List<STGBulletData> bqueue = new();
     public List<STGBulletData> bltdata = new();
-    public List<Texture2D> textures = new();
     public List<STGBulletData> brem = new();
+    public List<STGMultiMesh> mmpool = new();
+    public List<STGMultiMesh> multimeshes = new();
     private Area2D _shared_area;
     public Area2D shared_area {
         get{ return _shared_area; }
@@ -145,10 +150,21 @@ public partial class STGGlobal:Node{
 
         // loading and preparing all the bullets
         foreach (string file in DirAccess.GetFilesAt(BULLET_DIRECTORY)){
-            bltdata.Add((STGBulletData)ResourceLoader.Load((BULLET_DIRECTORY + "/" + file).TrimSuffix(".remap")));
             // builds use .remap extension so that is trimmed here
             // you can look at this issue for more info: https://github.com/godotengine/godot/issues/66014
             // also this will probably change in a later release for the engine
+            bltdata.Add((STGBulletData)ResourceLoader.Load((BULLET_DIRECTORY + "/" + file).TrimSuffix(".remap")));
+            bltdata.Last().id = bltdata.Count - 1;
+            mmpool.Add(new(){
+                texture = bltdata.Last().texture,
+                multimesh = new(){
+                    InstanceCount = (int)POOL_SIZE,
+                    VisibleInstanceCount = -1,
+                    Mesh = new QuadMesh(){
+                        Size = bltdata.Last().texture.GetSize()
+                    }
+                }
+            });
         }
 
         // pooling lol
@@ -160,6 +176,9 @@ public partial class STGGlobal:Node{
 	    	PhysicsServer2D.AreaSetShapeDisabled(area_rid, i, true);
             bpool.Add(new STGShape(shape_rid, i));
         }
+        // for (int i = 0; i < MULTIMESH_COUNT; i++){
+        //     mmpool.Add(new());
+        // }
 
         // global clocks cuz yeah
         clock_timer      = GetTree().CreateTimer(TIMER_START, false);
@@ -195,11 +214,11 @@ public partial class STGGlobal:Node{
         PoolSize.Text = POOL_SIZE.ToString();
         while (true){
             await Task.Delay(250);
-            Pooled  .Text = bpool   .Count.ToString();
-            Active  .Text = blts    .Count.ToString();
-            Removing.Text = brem    .Count.ToString();
-            Textures.Text = textures.Count.ToString();
-            FPS     .Text = fps           .ToString();
+            Pooled  .Text = bpool.Count.ToString();
+            Active  .Text = bullet_count.ToString();
+            Removing.Text = brem.Count.ToString();
+            Textures.Text = bltdata.Count.ToString();
+            FPS     .Text = fps.ToString();
         }
     }
 
@@ -219,6 +238,16 @@ public partial class STGGlobal:Node{
         }
     }
 
+    public void get_multimesh(Texture2D tex){
+        Debug.Assert(mmpool.Count == 0, "Multimesh pool is empty.");
+        STGMultiMesh mm = mmpool.Last();
+        mmpool.RemoveAt(mmpool.Count - 1);
+        mm.texture = tex;
+        (mm.multimesh.Mesh as QuadMesh).Size = tex.GetSize();
+        mm.multimesh.InstanceCount = (int)POOL_SIZE;
+        multimeshes.Add(mm);
+    }
+
     // i got the idea on how to optimize this from this nice devlog. it's pretty clean and detailed.
     // also their game looks pretty cool too, so check it out if you have the time.
     // https://worldeater-dev.itch.io/bittersweet-birthday/devlog/210789/howto-drawing-a-metric-ton-of-bullets-in-godot
@@ -234,14 +263,16 @@ public partial class STGGlobal:Node{
         PhysicsServer2D.AreaSetShapeTransform(area_rid, shape.idx, t);
         PhysicsServer2D.AreaSetShapeDisabled(area_rid, shape.idx, false);
         if (data.lifespan <= 0) data.lifespan = 9999999;
-        blts.Add(data);
+        mmpool[data.id].bullets.Add(data);
         // spawn_audio.Play();
     }
 
     public STGBulletData configure_bullet(STGBulletData data){
         STGBulletModifier mod = data.next;
         data.lifespan = mod.lifespan > 0 ? mod.lifespan : 999999;
-        data.texture = textures[mod.id];
+        // data.texture = textures[mod.id];
+        mmpool[data.id].bullets.Remove(data);
+        mmpool[mod.id].bullets.Add(data);
         data.next = mod.next;
         return data;
     }
@@ -256,38 +287,41 @@ public partial class STGGlobal:Node{
         if (controller == null) return;
         Vector2 player_pos = controller.player.Position;
         bqueue.Clear();
-        Parallel.ForEach(blts, blt => {
-            if (blt.lifespan >= 0) blt.lifespan -= fdelta;
-            else bqueue.Add(blt);
-            foreach (STGTween tw in blt.tweens){
-                if (blt.current < tw.list.Count){
-                    blt.Set(tw.property_str, tw.list[blt.current] + (float)(tw.mode == STGTween.TweenMode.Add ? blt.Get(tw.property_str) : 0));
-                    blt.current++;
+        Parallel.ForEach(mmpool, mm => {
+            Parallel.ForEach(mm.bullets, blt => {
+                if (blt.lifespan >= 0) blt.lifespan -= fdelta;
+                else bqueue.Add(blt);
+                foreach (STGTween tw in blt.tweens){
+                    if (blt.current < tw.list.Count){
+                        blt.Set(tw.property_str, tw.list[blt.current] + (float)(tw.mode == STGTween.TweenMode.Add ? blt.Get(tw.property_str) : 0));
+                        blt.current++;
+                    }
                 }
-            }
-            blt.direction = Clamp(blt.position.AngleToPoint(player_pos), blt.direction - blt.homing, blt.direction + blt.homing);
-            blt.position += Vector2.Right.Rotated(blt.direction) * blt.magnitude * fdelta;
-            Transform2D t = new(0, blt.position);
-            if (!arena_rect_margined.HasPoint(blt.position)){
-                bqueue.Add(blt);
-                blt.next = null;
-            }
-            if (!blt.grazed && blt.position.DistanceTo(player_pos) - blt.collision_radius < GRAZE_RADIUS){
-                blt.grazed = true;
-                graze_counter++;
-                graze_audio.CallDeferred(AudioStreamPlayer.MethodName.Play);
-            }
-            PhysicsServer2D.AreaSetShapeTransform(area_rid, blt.shape.idx, t);
+                blt.direction = Clamp(blt.position.AngleToPoint(player_pos), blt.direction - blt.homing, blt.direction + blt.homing);
+                blt.position += Vector2.Right.Rotated(blt.direction) * blt.magnitude * fdelta;
+                Transform2D t = new(0, blt.position);
+                if (!arena_rect_margined.HasPoint(blt.position)){
+                    bqueue.Add(blt);
+                    blt.next = null;
+                }
+                if (controller.player.ProcessMode != ProcessModeEnum.Disabled && !blt.grazed && blt.position.DistanceTo(player_pos) - blt.collision_radius < GRAZE_RADIUS){
+                    blt.grazed = true;
+                    graze_counter++;
+                    graze_audio.CallDeferred(AudioStreamPlayer.MethodName.Play);
+                }
+                PhysicsServer2D.AreaSetShapeTransform(area_rid, blt.shape.idx, t);
+            });
         });
-        foreach (STGBulletData blt in bqueue){
+        for (int i = 0; i < bqueue.Count; i++){
+            STGBulletData blt = bqueue[i];
             if (blt.next == null){
                 PhysicsServer2D.AreaSetShapeDisabled(area_rid, blt.shape.idx, true);
                 blt.texture = remove_template;
                 blt.lifespan = 0.5;
-                blts.Remove(blt);
+                mmpool[blt.id].bullets.Remove(blt);
                 brem.Add(blt);
             } else {
-               blts[blts.IndexOf(blt)] = configure_bullet(blt);
+                blt = configure_bullet(blt);
             }
         }
         bqueue.Clear();
@@ -301,45 +335,43 @@ public partial class STGGlobal:Node{
             brem.Remove(blt);
             bpool.Add(blt.shape);
         }
-        bullet_count = blts.Count;
+        bullet_count = (int)POOL_SIZE - bpool.Count;
     }
 
     private static float Clamp(float value, float min, float max){
         return value >= max ? max : (value <= min ? min : value);
     }
 
-    public void create_texture(STGBulletModifier mod){
-        if (mod.id != -1) return; // #todo: also check whether this exact texture is already saved (same index and colors)
-        Texture2D tex = (Texture2D)bltdata[mod.index].texture.Duplicate(); // lol
-        
-            
-
-        // if (tex is GradientTexture2D){
-        //     GradientTexture2D gradientTex = tex as GradientTexture2D;
-        //     gradientTex.Gradient = gradientTex.Gradient.Duplicate() as Gradient;
-        //     for (int i = 0; i < gradientTex.Gradient.Colors.Length; i++){
-        //         // we use Color.V since we use black&white colors
-        //         float v = gradientTex.Gradient.Colors[i].V;
-        //         Color newCol = (mod.inner_color * v) + (mod.outer_color * (1-v));
-        //         newCol.A = gradientTex.Gradient.Colors[i].A;
-        //         gradientTex.Gradient.SetColor(i, newCol);
-        //     }
-        // } else if (tex is CompressedTexture2D){
-        //     CompressedTexture2D compressedTex = tex as CompressedTexture2D;
-        //     // i don't even think this part will be necessary but yeah, non-gradient textures work too.
-        // }
-
-        mod.id = textures.Count;
-        textures.Add(tex);
-    }
+    // public void create_texture(STGBulletModifier mod){
+    //     if (mod.id != -1) return; // #todo: also check whether this exact texture is already saved (same index and colors)
+    //     Texture2D tex = (Texture2D)bltdata[mod.index].texture.Duplicate(); // lol
+    //     if (tex is GradientTexture2D){
+    //         GradientTexture2D gradientTex = tex as GradientTexture2D;
+    //         gradientTex.Gradient = gradientTex.Gradient.Duplicate() as Gradient;
+    //         for (int i = 0; i < gradientTex.Gradient.Colors.Length; i++){
+    //             // we use Color.V since we use black&white colors
+    //             float v = gradientTex.Gradient.Colors[i].V;
+    //             Color newCol = (mod.inner_color * v) + (mod.outer_color * (1-v));
+    //             newCol.A = gradientTex.Gradient.Colors[i].A;
+    //             gradientTex.Gradient.SetColor(i, newCol);
+    //         }
+    //     } else if (tex is CompressedTexture2D){
+    //         CompressedTexture2D compressedTex = tex as CompressedTexture2D;
+    //         // i don't even think this part will be necessary but yeah, non-gradient textures work too.
+    //     }
+    //     mod.id = textures.Count;
+    //     textures.Add(tex);
+    // }
 
     public void clear(){
         EmitSignal(SignalName.stop_spawner);
-        foreach (STGBulletData blt in blts){
-            PhysicsServer2D.AreaSetShapeDisabled(area_rid, blt.shape.idx, true);
-            bpool.Add(blt.shape);
-        }
-        blts.Clear();
+        Parallel.ForEach(multimeshes, mm => {
+            foreach (STGBulletData blt in mm.bullets){
+                PhysicsServer2D.AreaSetShapeDisabled(area_rid, blt.shape.idx, true);
+                bpool.Add(blt.shape);
+            }
+            mm.bullets.Clear();
+        });
         EmitSignal(SignalName.cleared);
     }
 

@@ -37,9 +37,9 @@ public partial class STGSpawner:Resource{
         is_running = true;
         stop_flag = false;
         bdata = STGGlobal.bltdata[bullet.index];
-        tex = STGGlobal.textures[bullet.id];
+        // tex = STGGlobal.textures[bullet.id];
         if (position_type == PosType.Relative){
-            real_pos = STGGlobal.lerp4arena(position) + STGGlobal.controller.enemy.Position;
+            real_pos = STGGlobal.lerp4arena(position) + STGGlobal.controller.enemy.Position - STGGlobal.arena_rect.Position;
         } else {
             real_pos = STGGlobal.lerp4arena(position);
         }
