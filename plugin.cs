@@ -49,6 +49,13 @@ public partial class plugin:EditorPlugin{
 			{"hint_string", ""}
 		},
 		new(){
+			{"name", "panel_position"},
+			{"default", 0},
+			{"type", (int)Variant.Type.Int},
+			{"hint", (int)PropertyHint.Enum},
+			{"hint_string", "Top Left,Top Right,Bottom Left,Bottom Right"}
+		},
+		new(){
 			{"name", "multimesh_count"},
 			{"default", 10},
 			{"type", (int)Variant.Type.Int},

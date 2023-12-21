@@ -16,8 +16,8 @@ public partial class STGSequence:Resource{
         foreach (STGSpawner spw in spawners){
             spw.spawn();
         }
-        await ToSignal(STGGlobal.Instance, "spawner_done");
-        STGGlobal.Instance.EmitSignal("end_sequence");
+        await ToSignal(STGGlobal.Instance, STGGlobal.SignalName.spawner_done);
+        STGGlobal.Instance.EmitSignal(STGGlobal.SignalName.end_sequence);
     }
 
 }

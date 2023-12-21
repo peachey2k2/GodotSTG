@@ -37,7 +37,7 @@ public partial class BattleController:Node2D{
         AddChild(timer);
 
         Material = new ShaderMaterial(){
-            Shader = (Shader)ResourceLoader.Load("res://addons/GodotSTG/BulletAnim.gdshader")
+            Shader = (Shader)ResourceLoader.Load("res://addons/GodotSTG/BulletModulate.gdshader")
         };
         
     }
@@ -129,10 +129,12 @@ public partial class BattleController:Node2D{
             for (int i = 0; i < mm.bullets.Count; i++){
                 STGBulletData blt = mm.bullets[i];
                 mm.multimesh.SetInstanceTransform2D(i, new Transform2D(blt.direction, blt.position));
+                mm.multimesh.SetInstanceCustomData(i, blt.custom_data);
             }
         });
         // canvasitem functions are not thread-safe i think
         foreach (STGMultiMesh mm in STGGlobal.mmpool){
+            if (mm.multimesh.VisibleInstanceCount == 0) continue;
             DrawMultimesh(mm.multimesh, mm.texture);
         }
     }

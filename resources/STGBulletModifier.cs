@@ -9,6 +9,7 @@ public partial class STGBulletModifier:Resource{
     [Export] public int index {get; set;} = 0;
     [Export] public Color outer_color {get; set;} = Colors.Red;
     [Export] public Color inner_color {get; set;} = Colors.White;
+    public Color custom_data {get; set;}
     [Export] public float speed {get; set;}
     public double lifespan {get; set;} = -1;
     [Export] public Array<STGTween> tweens = new();

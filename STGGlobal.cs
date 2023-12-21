@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Godot;
 using Godot.Collections;
@@ -21,6 +22,7 @@ public partial class STGGlobal:Node{
     [Signal] public delegate void stop_spawnerEventHandler();
     [Signal] public delegate void clearedEventHandler();
     [Signal] public delegate void spawner_doneEventHandler();
+    [Signal] public delegate void grazeEventHandler(STGBulletData bullet);
 
     [Signal] public delegate void bar_emptiedEventHandler();
     [Signal] public delegate void damage_takenEventHandler(int new_amount);
@@ -58,6 +60,10 @@ public partial class STGGlobal:Node{
             {"default", false},
         },
         new() {
+            {"name", "panel_position"},
+            {"default", 0},
+        },
+        new() {
             {"name", "multimesh_count"},
             {"default", 10},
         }
@@ -80,6 +86,7 @@ public partial class STGGlobal:Node{
     private uint REMOVAL_MARGIN;
     private float GRAZE_RADIUS;
     private bool ENABLE_PANEL_AT_START;
+    private int PANEL_POSITION;
     private uint MULTIMESH_COUNT;
     // private AudioStream SFX_SPAWN;
     private AudioStream SFX_GRAZE;
@@ -158,11 +165,12 @@ public partial class STGGlobal:Node{
             mmpool.Add(new(){
                 texture = bltdata.Last().texture,
                 multimesh = new(){
-                    InstanceCount = (int)POOL_SIZE,
+                    UseCustomData = true,
                     VisibleInstanceCount = -1,
                     Mesh = new QuadMesh(){
                         Size = bltdata.Last().texture.GetSize()
-                    }
+                    },
+                    InstanceCount = (int)POOL_SIZE,
                 }
             });
         }
@@ -192,7 +200,7 @@ public partial class STGGlobal:Node{
         //     VolumeDb = -5 // ah yes, negative sound
         // };
         graze_audio = new(){
-            MaxPolyphony = 50,
+            MaxPolyphony = 1,
             Stream = SFX_GRAZE,
             PitchScale = 1.0F,
             VolumeDb = -20 // ah yes, negative sound
@@ -202,6 +210,25 @@ public partial class STGGlobal:Node{
 
         // panel
         panel = (CanvasLayer)((PackedScene)ResourceLoader.Load("res://addons/GodotSTG/panel.tscn")).Instantiate();
+        Panel panel_panel = (Panel)panel.GetNode("Panel"); // panel panel panel panel
+        switch (PANEL_POSITION){
+            case 0:
+                panel_panel.Position = new Vector2(0, 0);
+                panel_panel.SetAnchorsPreset(Control.LayoutPreset.TopLeft);
+                break;
+            case 1:
+                panel_panel.Position = new Vector2(-panel_panel.Size.X, 0);
+                panel_panel.SetAnchorsPreset(Control.LayoutPreset.TopRight);
+                break;
+            case 2:
+                panel_panel.Position = new Vector2(0,-panel_panel.Size.Y);
+                panel_panel.SetAnchorsPreset(Control.LayoutPreset.BottomRight);
+                break;
+            case 3:
+                panel_panel.Position = new Vector2(-panel_panel.Size.X, -panel_panel.Size.Y);
+                panel_panel.SetAnchorsPreset(Control.LayoutPreset.BottomLeft);
+                break;
+        }
         if (ENABLE_PANEL_AT_START) panel.Show();
         AddChild(panel);
         Label PoolSize = (Label)panel.GetNode("Panel/VBoxContainer/PoolSize/count");
@@ -236,16 +263,6 @@ public partial class STGGlobal:Node{
             fps = _fps * 2;
             _fps = 1;
         }
-    }
-
-    public void get_multimesh(Texture2D tex){
-        Debug.Assert(mmpool.Count == 0, "Multimesh pool is empty.");
-        STGMultiMesh mm = mmpool.Last();
-        mmpool.RemoveAt(mmpool.Count - 1);
-        mm.texture = tex;
-        (mm.multimesh.Mesh as QuadMesh).Size = tex.GetSize();
-        mm.multimesh.InstanceCount = (int)POOL_SIZE;
-        multimeshes.Add(mm);
     }
 
     // i got the idea on how to optimize this from this nice devlog. it's pretty clean and detailed.
@@ -297,17 +314,22 @@ public partial class STGGlobal:Node{
                         blt.current++;
                     }
                 }
+                // home the bullet if it's homing
                 blt.direction = Clamp(blt.position.AngleToPoint(player_pos), blt.direction - blt.homing, blt.direction + blt.homing);
+                // move the bullet
                 blt.position += Vector2.Right.Rotated(blt.direction) * blt.magnitude * fdelta;
                 Transform2D t = new(0, blt.position);
+                // remove if out of bounds
                 if (!arena_rect_margined.HasPoint(blt.position)){
                     bqueue.Add(blt);
                     blt.next = null;
                 }
+                // check for grazes
                 if (controller.player.ProcessMode != ProcessModeEnum.Disabled && !blt.grazed && blt.position.DistanceTo(player_pos) - blt.collision_radius < GRAZE_RADIUS){
                     blt.grazed = true;
                     graze_counter++;
                     graze_audio.CallDeferred(AudioStreamPlayer.MethodName.Play);
+                    EmitSignal(SignalName.graze, blt);
                 }
                 PhysicsServer2D.AreaSetShapeTransform(area_rid, blt.shape.idx, t);
             });

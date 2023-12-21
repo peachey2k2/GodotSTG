@@ -1,8 +1,7 @@
-[gd_scene load_steps=10 format=3 uid="uid://carikoua6ss05"]
+[gd_scene load_steps=9 format=3 uid="uid://carikoua6ss05"]
 
-[ext_resource type="Texture2D" uid="uid://33qc36xfaf85" path="res://icon.png" id="1_74m16"]
 [ext_resource type="Script" path="res://addons/GodotSTG/preview/PreviewScene.cs" id="1_fpnra"]
-[ext_resource type="Shader" path="res://addons/GodotSTG/BulletModulate.gdshader" id="2_72euc"]
+[ext_resource type="Shader" path="res://addons/GodotSTG/BulletModulatePreview.gdshader" id="2_m1xt6"]
 
 [sub_resource type="Gradient" id="Gradient_gnc3p"]
 
@@ -12,7 +11,7 @@ fill_from = Vector2(1, 1)
 fill_to = Vector2(0, 0)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_tjh0p"]
-shader = ExtResource("2_72euc")
+shader = ExtResource("2_m1xt6")
 shader_parameter/black = Color(0, 0, 0, 1)
 shader_parameter/white = Color(1, 1, 1, 1)
 
@@ -71,7 +70,6 @@ offset_right = 32.0
 offset_bottom = 32.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("1_74m16")
 
 [node name="Outline" type="TextureRect" parent="."]
 custom_minimum_size = Vector2(192, 192)

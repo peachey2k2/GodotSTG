@@ -92,7 +92,7 @@ public partial class STGBulletData:Resource{
     public Array<STGTween> tweens;
     public int current = 0;
     public bool grazed = false;
-
+    public Color custom_data;
     public STGShape shape;
     public STGBulletModifier next;
     public int id;

@@ -32,7 +32,6 @@ font_color = Color(1, 0, 1, 1)
 
 [node name="panel" type="CanvasLayer"]
 layer = 5
-visible = false
 
 [node name="Panel" type="Panel" parent="."]
 offset_right = 140.0

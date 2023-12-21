@@ -11,21 +11,24 @@
 // shader type is canvas_item since we're working with 2d here.
 shader_type canvas_item;
 
-// fuck lighting tbh
+// disable godot's own shadering - this includes things like lighting.
+// comment the line below if it causes problems for you.
 render_mode unshaded;
 
-// uniform variables are exported. we also need to
-// clarify the hint so we have a color picker in the editor.
-// both colors and coords use vectors. keep that in mind.
-uniform vec3 black : source_color = vec3(0.0);
-uniform vec3 white : source_color = vec3(1.0);
+// varying means this value is seperate for every vertex.
+// it allows us to send data from vertex() to fragment().
+varying vec4 custom;
 
-// fragment shaders run for every pixel.
+// you probably know what a constant is.
+const vec3 WHITE = vec3(1, 1, 1);
+
+// vertex() is called for every vertex (triangles that make up the mesh)
+void vertex(){
+	custom = INSTANCE_CUSTOM.rgba;
+}
+
+// fragment() is called for every fragment (pixels with some additional info)
 void fragment(){
-	
-	// simple vector math to grayscale values
 	float g = (COLOR.r + COLOR.g + COLOR.b) / 3.0;
-	
-	// use grayscale values to replace blacks and whites
-	COLOR.rgb = g * white + (1.0-g) * black;
+	COLOR.rgb = g * WHITE * custom.a + (1.0-g) * custom.rgb;
 }

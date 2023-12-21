@@ -67,9 +67,11 @@ public partial class STGSpawner:Resource{
         _bdata.direction = dir;
         _bdata.magnitude = mag;
         _bdata.lifespan = bullet.lifespan;
-        _bdata.texture = tex;
+        // _bdata.texture = tex;
         _bdata.next = bullet.next;
         _bdata.tweens = bullet.tweens;
+        _bdata.custom_data = bullet.outer_color;
+        _bdata.custom_data.A = bullet.inner_color.V;
         STGGlobal.create_bullet(_bdata);
     }
 }
