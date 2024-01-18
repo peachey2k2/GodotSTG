@@ -295,7 +295,7 @@ public partial class STGGlobal:Node{
     }
 
     public override void _UnhandledInput(InputEvent @event){
-        // programmer challenge: if you can't make out what this line does, quit programming lmao \s unless
+        // programmer challenge: if you can't make out what this line does, quit programming lmao (jk (unless...))
         if (InputMap.HasAction(stg_info) && Input.IsActionJustPressed(stg_info)) panel.Visible = !panel.Visible;
     }
 
@@ -329,7 +329,7 @@ public partial class STGGlobal:Node{
                     blt.grazed = true;
                     graze_counter++;
                     graze_audio.CallDeferred(AudioStreamPlayer.MethodName.Play);
-                    EmitSignal(SignalName.graze, blt);
+                    CallDeferred(MethodName.EmitSignal, SignalName.graze, blt);
                 }
                 PhysicsServer2D.AreaSetShapeTransform(area_rid, blt.shape.idx, t);
             });
