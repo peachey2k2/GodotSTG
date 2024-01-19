@@ -22,13 +22,14 @@ public partial class STGGlobal:Node{
     [Signal] public delegate void stop_spawnerEventHandler();
     [Signal] public delegate void clearedEventHandler();
     [Signal] public delegate void spawner_doneEventHandler();
+    [Signal] public delegate void bullet_spawnedEventHandler(STGBulletInstance bullet); 
     [Signal] public delegate void grazeEventHandler(STGBulletData bullet);
 
     [Signal] public delegate void bar_emptiedEventHandler();
     [Signal] public delegate void damage_takenEventHandler(int new_amount);
 
     private PackedScene area_template;
-    private Texture2D remove_template;
+    // private Texture2D remove_template;
 
     public BattleController controller {get; set;}
     public CanvasLayer panel;
@@ -89,13 +90,13 @@ public partial class STGGlobal:Node{
     private int PANEL_POSITION;
     private uint MULTIMESH_COUNT;
     // private AudioStream SFX_SPAWN;
-    private AudioStream SFX_GRAZE;
+    // private AudioStream SFX_GRAZE;
 
     // low level tomfuckery
     public List<STGShape> bpool = new();
-    public List<STGBulletData> bqueue = new();
+    public List<STGBulletInstance> bqueue = new();
     public List<STGBulletData> bltdata = new();
-    public List<STGBulletData> brem = new();
+    public List<STGBulletInstance> brem = new();
     public List<STGMultiMesh> mmpool = new();
     public List<STGMultiMesh> multimeshes = new();
     private Area2D _shared_area;
@@ -129,7 +130,7 @@ public partial class STGGlobal:Node{
     private ulong _fps = 1;
     public ulong start = Time.GetTicksUsec();
     public ulong end;
-    public int graze_counter {private set; get;}
+    // public int graze_counter {private set; get;}
 
     private static float fdelta = 0.016667F;
     private bool exiting = false;
@@ -139,21 +140,21 @@ public partial class STGGlobal:Node{
         foreach (System.Collections.Generic.Dictionary<string, Variant> _setting in settings){
             Set(((string)_setting["name"]).ToUpper(), ProjectSettings.GetSetting("godotstg/general/" + _setting["name"], _setting["default"]));
         }
-        foreach (System.Collections.Generic.Dictionary<string, Variant> _setting in sounds){
-            Set(("SFX_" + (string)_setting["name"]).ToUpper(), ResourceLoader.Load((string)ProjectSettings.GetSetting("godotstg/sfx/" + _setting["name"], _setting["default"])));
-        }
+        // foreach (System.Collections.Generic.Dictionary<string, Variant> _setting in sounds){
+        //     Set(("SFX_" + (string)_setting["name"]).ToUpper(), ResourceLoader.Load((string)ProjectSettings.GetSetting("godotstg/sfx/" + _setting["name"], _setting["default"])));
+        // }
     }
 
     // AudioStreamPlayer spawn_audio;
-    AudioStreamPlayer graze_audio;
+    // AudioStreamPlayer graze_audio;
 
     public override async void _Ready(){
         Instance = this; // epic self-reference to access the singleton from everywhere
-        battle_start += _on_battle_start;
+        // battle_start += _on_battle_start;
 
         // there is no @onready in c# :sadge: 
         area_template = (PackedScene)ResourceLoader.Load("res://addons/GodotSTG/resources/shared_area.tscn");
-        remove_template = (Texture2D)ResourceLoader.Load("res://addons/GodotSTG/assets/remove.png");
+        // remove_template = (Texture2D)ResourceLoader.Load("res://addons/GodotSTG/assets/remove.png");
 
         // loading and preparing all the bullets
         foreach (string file in DirAccess.GetFilesAt(BULLET_DIRECTORY)){
@@ -192,21 +193,13 @@ public partial class STGGlobal:Node{
         clock_timer      = GetTree().CreateTimer(TIMER_START, false);
         clock_real_timer = GetTree().CreateTimer(TIMER_START, true);
 
-        // audio setup
-        // spawn_audio = new(){
-        //     MaxPolyphony = 100,
-        //     Stream = SFX_SPAWN,
+        // graze_audio = new(){
+        //     MaxPolyphony = 1,
+        //     Stream = SFX_GRAZE,
         //     PitchScale = 1.0F,
-        //     VolumeDb = -5 // ah yes, negative sound
+        //     VolumeDb = -20 // ah yes, negative sound
         // };
-        graze_audio = new(){
-            MaxPolyphony = 1,
-            Stream = SFX_GRAZE,
-            PitchScale = 1.0F,
-            VolumeDb = -20 // ah yes, negative sound
-        };
-        // AddChild(spawn_audio);
-        AddChild(graze_audio);
+        // AddChild(graze_audio);
 
         // panel
         panel = (CanvasLayer)((PackedScene)ResourceLoader.Load("res://addons/GodotSTG/panel.tscn")).Instantiate();
@@ -249,9 +242,9 @@ public partial class STGGlobal:Node{
         }
     }
 
-    void _on_battle_start(){
-        graze_counter = 0;
-    }
+    // void _on_battle_start(){
+    //     graze_counter = 0;
+    // }
 
     // messy fps calculation
     public override void _Process(double delta){
@@ -268,7 +261,7 @@ public partial class STGGlobal:Node{
     // i got the idea on how to optimize this from this nice devlog. it's pretty clean and detailed.
     // also their game looks pretty cool too, so check it out if you have the time.
     // https://worldeater-dev.itch.io/bittersweet-birthday/devlog/210789/howto-drawing-a-metric-ton-of-bullets-in-godot
-    public void create_bullet(STGBulletData data){
+    public void create_bullet(STGBulletInstance data){
         GodotSTG.Debug.Assert(bpool.Count > 0, "Pool is out of bullets.");
         STGShape shape = bpool.Last();
         GodotSTG.Debug.Assert(shape.rid.IsValid, "Shape RID is invalid.");
@@ -281,10 +274,10 @@ public partial class STGGlobal:Node{
         PhysicsServer2D.AreaSetShapeDisabled(area_rid, shape.idx, false);
         if (data.lifespan <= 0) data.lifespan = 9999999;
         mmpool[data.id].bullets.Add(data);
-        // spawn_audio.Play();
+        EmitSignal(SignalName.bullet_spawned, data);
     }
 
-    public STGBulletData configure_bullet(STGBulletData data){
+    public STGBulletInstance configure_bullet(STGBulletInstance data){
         STGBulletModifier mod = data.next;
         data.lifespan = mod.lifespan > 0 ? mod.lifespan : 999999;
         // data.texture = textures[mod.id];
@@ -327,36 +320,22 @@ public partial class STGGlobal:Node{
                 // check for grazes
                 if (controller.player.ProcessMode != ProcessModeEnum.Disabled && !blt.grazed && blt.position.DistanceTo(player_pos) - blt.collision_radius < GRAZE_RADIUS){
                     blt.grazed = true;
-                    graze_counter++;
-                    graze_audio.CallDeferred(AudioStreamPlayer.MethodName.Play);
                     CallDeferred(MethodName.EmitSignal, SignalName.graze, blt);
                 }
                 PhysicsServer2D.AreaSetShapeTransform(area_rid, blt.shape.idx, t);
             });
         });
         for (int i = 0; i < bqueue.Count; i++){
-            STGBulletData blt = bqueue[i];
+            STGBulletInstance blt = bqueue[i];
             if (blt.next == null){
                 PhysicsServer2D.AreaSetShapeDisabled(area_rid, blt.shape.idx, true);
-                blt.texture = remove_template;
-                blt.lifespan = 0.5;
                 mmpool[blt.id].bullets.Remove(blt);
-                brem.Add(blt);
+                bpool.Add(blt.shape);
             } else {
                 blt = configure_bullet(blt);
             }
         }
         bqueue.Clear();
-        Parallel.ForEach(brem, blt => {
-            if (blt.lifespan >= 0) blt.lifespan -= delta;
-            else {
-                bqueue.Add(blt);
-            }
-        });
-        foreach (STGBulletData blt in bqueue){
-            brem.Remove(blt);
-            bpool.Add(blt.shape);
-        }
         bullet_count = (int)POOL_SIZE - bpool.Count;
     }
 
@@ -364,31 +343,10 @@ public partial class STGGlobal:Node{
         return value >= max ? max : (value <= min ? min : value);
     }
 
-    // public void create_texture(STGBulletModifier mod){
-    //     if (mod.id != -1) return; // #todo: also check whether this exact texture is already saved (same index and colors)
-    //     Texture2D tex = (Texture2D)bltdata[mod.index].texture.Duplicate(); // lol
-    //     if (tex is GradientTexture2D){
-    //         GradientTexture2D gradientTex = tex as GradientTexture2D;
-    //         gradientTex.Gradient = gradientTex.Gradient.Duplicate() as Gradient;
-    //         for (int i = 0; i < gradientTex.Gradient.Colors.Length; i++){
-    //             // we use Color.V since we use black&white colors
-    //             float v = gradientTex.Gradient.Colors[i].V;
-    //             Color newCol = (mod.inner_color * v) + (mod.outer_color * (1-v));
-    //             newCol.A = gradientTex.Gradient.Colors[i].A;
-    //             gradientTex.Gradient.SetColor(i, newCol);
-    //         }
-    //     } else if (tex is CompressedTexture2D){
-    //         CompressedTexture2D compressedTex = tex as CompressedTexture2D;
-    //         // i don't even think this part will be necessary but yeah, non-gradient textures work too.
-    //     }
-    //     mod.id = textures.Count;
-    //     textures.Add(tex);
-    // }
-
     public void clear(){
         EmitSignal(SignalName.stop_spawner);
         Parallel.ForEach(multimeshes, mm => {
-            foreach (STGBulletData blt in mm.bullets){
+            foreach (STGBulletInstance blt in mm.bullets){
                 PhysicsServer2D.AreaSetShapeDisabled(area_rid, blt.shape.idx, true);
                 bpool.Add(blt.shape);
             }

@@ -11,7 +11,7 @@ public partial class STGBulletModifier:Resource{
     [Export] public Color inner_color {get; set;} = Colors.White;
     public Color custom_data {get; set;}
     [Export] public float speed {get; set;}
-    public double lifespan {get; set;} = -1;
+    [Export] public double lifespan {get; set;} = 0;
     [Export] public Array<STGTween> tweens = new();
     [Export] public STGBulletModifier next {get; set;}
 

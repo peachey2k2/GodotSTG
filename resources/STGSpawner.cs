@@ -61,17 +61,13 @@ public partial class STGSpawner:Resource{
     }
 
     public void spawn_bullet(Vector2 pos, float dir, float mag){
-        STGBulletData _bdata = (STGBulletData)bdata.Duplicate();
-        _bdata.current = 0;
-        _bdata.position = pos;
-        _bdata.direction = dir;
-        _bdata.magnitude = mag;
-        _bdata.lifespan = bullet.lifespan;
-        // _bdata.texture = tex;
-        _bdata.next = bullet.next;
-        _bdata.tweens = bullet.tweens;
-        _bdata.custom_data = bullet.outer_color;
-        _bdata.custom_data.A = bullet.inner_color.V;
+        // STGBulletData _bdata = (STGBulletData)bdata.Duplicate();
+        STGBulletInstance _bdata = new(bdata, bullet){
+            current = 0,
+            position = pos,
+            direction = dir,
+            magnitude = mag
+        };
         STGGlobal.create_bullet(_bdata);
     }
 }

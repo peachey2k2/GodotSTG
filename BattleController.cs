@@ -20,9 +20,9 @@ public partial class BattleController:Node2D{
     public int hp_threshold;
     public int time_threshold;
 
-    public CollisionObject2D player;
-    public CollisionObject2D enemy;
-    Rect2 arena_rect;
+    [Export] public CollisionObject2D player;
+    [Export] public CollisionObject2D enemy;
+    [Export] Rect2 arena_rect;
     string signals_are_hard;
 
     public override void _Ready(){
@@ -95,19 +95,6 @@ public partial class BattleController:Node2D{
         STGGlobal.EmitSignal(STGGlobal.SignalName.end_battle);
     }
 
-    // public void cache_spell_textures(STGSpell spell){
-    //     foreach (STGSequence seq in spell.sequences){
-    //         foreach (STGSpawner spw in seq.spawners){
-    //             STGBulletModifier blt = spw.bullet;
-    //             while (true){
-    //                 STGGlobal.create_texture(blt);
-    //                 if (blt.next == null) break;
-    //                 blt = blt.next;
-    //             }
-    //         }
-    //     }
-    // }
-
     public async void kill(){
         ProcessMode = ProcessModeEnum.Disabled;
         STGGlobal.shared_area.Reparent(STGGlobal, false);
@@ -127,7 +114,7 @@ public partial class BattleController:Node2D{
             mm.multimesh.VisibleInstanceCount = mm.bullets.Count;
             if (mm.multimesh.VisibleInstanceCount == 0) return;
             for (int i = 0; i < mm.bullets.Count; i++){
-                STGBulletData blt = mm.bullets[i];
+                STGBulletInstance blt = mm.bullets[i];
                 mm.multimesh.SetInstanceTransform2D(i, new Transform2D(blt.direction, blt.position));
                 mm.multimesh.SetInstanceCustomData(i, blt.custom_data);
             }
