@@ -14,4 +14,3 @@ GodotSTG is a series of state machines that offers you a streamlined way to make
 - [x] Manupulate player and enemy positions for each spellcard
 
 todo: finish this readme
-
