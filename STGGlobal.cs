@@ -162,7 +162,7 @@ public partial class STGGlobal:Node{
             // you can look at this issue for more info: https://github.com/godotengine/godot/issues/66014
             // also this will probably change in a later release for the engine
             bltdata.Add((STGBulletData)ResourceLoader.Load((BULLET_DIRECTORY + "/" + file).TrimSuffix(".remap")));
-            bltdata.Last().id = bltdata.Count - 1;
+            bltdata.Last().bid = bltdata.Count - 1;
             mmpool.Add(new(){
                 texture = bltdata.Last().texture,
                 multimesh = new(){
@@ -273,7 +273,7 @@ public partial class STGGlobal:Node{
         PhysicsServer2D.AreaSetShapeTransform(area_rid, shape.idx, t);
         PhysicsServer2D.AreaSetShapeDisabled(area_rid, shape.idx, false);
         if (data.lifespan <= 0) data.lifespan = 9999999;
-        mmpool[data.id].bullets.Add(data);
+        mmpool[data.bid].bullets.Add(data);
         EmitSignal(SignalName.bullet_spawned, data);
     }
 
@@ -281,7 +281,7 @@ public partial class STGGlobal:Node{
         STGBulletModifier mod = data.next;
         data.lifespan = mod.lifespan > 0 ? mod.lifespan : 999999;
         // data.texture = textures[mod.id];
-        mmpool[data.id].bullets.Remove(data);
+        mmpool[data.bid].bullets.Remove(data);
         mmpool[mod.id].bullets.Add(data);
         data.next = mod.next;
         return data;
@@ -329,7 +329,7 @@ public partial class STGGlobal:Node{
             STGBulletInstance blt = bqueue[i];
             if (blt.next == null){
                 PhysicsServer2D.AreaSetShapeDisabled(area_rid, blt.shape.idx, true);
-                mmpool[blt.id].bullets.Remove(blt);
+                mmpool[blt.bid].bullets.Remove(blt);
                 bpool.Add(blt.shape);
             } else {
                 blt = configure_bullet(blt);

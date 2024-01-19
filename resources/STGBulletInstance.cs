@@ -3,9 +3,8 @@ using Godot.Collections;
 
 namespace GodotSTG;
 
-[GlobalClass]
 public partial class STGBulletInstance:Resource{
-    public int id;
+    public int bid;
     public float collision_radius;
     public Vector2 position;
     public float direction;
@@ -20,11 +19,16 @@ public partial class STGBulletInstance:Resource{
     public STGBulletModifier next;
 
     public STGBulletInstance(STGBulletData data, STGBulletModifier modifier){
+        bid = data.bid;
         collision_radius = data.collision_radius;
         lifespan = modifier.lifespan;
         next = modifier.next;
         tweens = modifier.tweens;
         custom_data = modifier.outer_color;
         custom_data.A = modifier.inner_color.V;
+    }
+
+    public override string ToString(){
+        return $"STGBulletInstance [iid:{GetInstanceId()} bid:{bid} pos:{position}]";
     }
 }

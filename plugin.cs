@@ -2,6 +2,8 @@
 using Godot;
 using Godot.Collections;
 
+namespace GodotSTG;
+
 [Tool]
 public partial class plugin:EditorPlugin{
 

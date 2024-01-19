@@ -3,7 +3,8 @@ using System.Transactions;
 using System.Windows.Markup;
 using Godot;
 using Godot.Collections;
-using GodotSTG;
+
+namespace GodotSTG;
 
 [GlobalClass, Icon("res://addons/GodotSTG/assets/bulletdata.png"), Tool]
 public partial class STGBulletData:Resource{
@@ -84,16 +85,5 @@ public partial class STGBulletData:Resource{
     }
 #endif
 
-    public Vector2 position;
-    public float direction;
-    public float magnitude;
-    public float homing = 0;
-    public double lifespan;
-    public Array<STGTween> tweens;
-    public int current = 0;
-    public bool grazed = false;
-    public Color custom_data;
-    public STGShape shape;
-    public STGBulletModifier next;
-    public int id;
+    public int bid;
 }

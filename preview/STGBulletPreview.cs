@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using Godot;
 
+namespace GodotSTG;
+
 [Tool]
 public partial class STGBulletPreview : EditorInspectorPlugin{
 

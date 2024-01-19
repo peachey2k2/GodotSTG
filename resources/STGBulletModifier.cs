@@ -6,7 +6,7 @@ namespace GodotSTG;
 [GlobalClass]
 public partial class STGBulletModifier:Resource{
 
-    [Export] public int index {get; set;} = 0;
+    [Export] public int bullet_id {get; set;} = 0;
     [Export] public Color outer_color {get; set;} = Colors.Red;
     [Export] public Color inner_color {get; set;} = Colors.White;
     public Color custom_data {get; set;}

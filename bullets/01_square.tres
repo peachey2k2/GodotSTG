@@ -1,0 +1,23 @@
+[gd_resource type="PackedDataContainer" script_class="STGBulletData" load_steps=4 format=3 uid="uid://bb8q4tsmxln1l"]
+
+[ext_resource type="Script" path="res://addons/GodotSTG/resources/STGBulletData.cs" id="1_8ewuu"]
+
+[sub_resource type="Gradient" id="Gradient_4g8ta"]
+offsets = PackedFloat32Array(0, 0.646119, 0.812785, 0.999, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_s00ti"]
+gradient = SubResource("Gradient_4g8ta")
+width = 32
+height = 32
+fill = 2
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0, 0.5)
+
+[resource]
+script = ExtResource("1_8ewuu")
+texture = SubResource("GradientTexture2D_s00ti")
+collision_radius = 8.0
+black = Color(0, 0, 0, 1)
+white = Color(1, 1, 1, 1)
+show_hitbox = true
