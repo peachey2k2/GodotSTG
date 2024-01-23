@@ -34,7 +34,7 @@ public partial class CircularSpawner:STGSpawner{
             for (int j = 0; j < amount; j++){
                 if (stop_flag) return;
                 spawn_bullet(
-                    real_pos +  direction * distance,
+                    real_pos + direction * distance,
                     direction.Angle(),
 					speed
                 );

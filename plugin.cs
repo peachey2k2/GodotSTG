@@ -63,21 +63,7 @@ public partial class plugin:EditorPlugin{
 			{"type", (int)Variant.Type.Int},
 			{"hint", (int)PropertyHint.Range},
 			{"hint_string", "1,50,1,or_greater"}
-		},
-		// new(){
-		// 	{"name", "sfx_spawn"},
-		// 	{"default", "res://addons/GodotSTG/assets/spawn.ogg"},
-		// 	{"type", (int)Variant.Type.String},
-		// 	{"hint", (int)PropertyHint.File},
-		// 	{"hint_string", ""}
-		// },
-		new(){
-			{"name", "sfx_graze"},
-			{"default", "res://addons/GodotSTG/assets/graze.ogg"},
-			{"type", (int)Variant.Type.String},
-			{"hint", (int)PropertyHint.File},
-			{"hint_string", ""}
-		},
+		}
 	};
 
 	STGBulletPreview preview = new();
@@ -116,7 +102,8 @@ public partial class plugin:EditorPlugin{
 	}
 
 	public string _get_setting_path(Dictionary _setting){
-		return "godotstg/" + (((string)_setting["name"]).StartsWith("sfx_") ? "sfx/" : "general/") + ((string)_setting["name"]).TrimPrefix("sfx_");
+		// return "godotstg/" + (((string)_setting["name"]).StartsWith("sfx_") ? "sfx/" : "general/") + ((string)_setting["name"]).TrimPrefix("sfx_");
+		return "godotstg/" + "general/" + (string)_setting["name"];
 	}
 
 	public void _clear_settings(){

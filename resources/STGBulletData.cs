@@ -35,6 +35,7 @@ public partial class STGBulletData:Resource{
         }
         get{ return _collision_radius; }
     }
+    [Export] public bool colorable {get; set;} = true;
 
 #if TOOLS
     public PreviewScene preview;

@@ -43,9 +43,9 @@ public partial class STGSpawner:Resource{
         } else {
             real_pos = STGGlobal.lerp4arena(position);
         }
-        STGGlobal.stop_spawner += _stop_spawner;
+        STGGlobal.stop_all_spawners += stop_spawner;
         await _spawn();
-        STGGlobal.Instance.EmitSignal("spawner_done");
+        STGGlobal.EmitSignal(STGGlobal.SignalName.spawner_done);
     }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -55,7 +55,7 @@ public partial class STGSpawner:Resource{
     }
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 
-    public void _stop_spawner(){
+    public void stop_spawner(){
         stop_flag = true;
         is_running = false;
     }

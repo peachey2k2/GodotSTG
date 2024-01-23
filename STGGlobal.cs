@@ -9,24 +9,52 @@ using GodotSTG;
 
 public partial class STGGlobal:Node{
 
-    static StringName stg_info = new("stg_info");
+    static StringName stg_info = new("stg_info"); // this is here to not create unnecesary strings
 
+    // All the signals are created here. Having them all in one place makes it easier to manage them.
+    // Since this script is globally loaded, you can connect to them from anywhere in your game.
+
+    // emitted when the 'start()' method is successfully called.
     [Signal] public delegate void battle_startEventHandler();
-    [Signal] public delegate void shield_changedEventHandler(int value);
-    [Signal] public delegate void spell_name_changedEventHandler(string value);
-    [Signal] public delegate void bar_changedEventHandler(int value);
-    [Signal] public delegate void life_changedEventHandler(Array<int> values, Array<Color> colors);
-    [Signal] public delegate void end_sequenceEventHandler();
-    [Signal] public delegate void end_spellEventHandler();
-    [Signal] public delegate void end_battleEventHandler();
-    [Signal] public delegate void stop_spawnerEventHandler();
-    [Signal] public delegate void clearedEventHandler();
-    [Signal] public delegate void spawner_doneEventHandler();
-    [Signal] public delegate void bullet_spawnedEventHandler(STGBulletInstance bullet); 
-    [Signal] public delegate void grazeEventHandler(STGBulletData bullet);
 
+    // emitted when a new spell starts.
+    [Signal] public delegate void spell_changedEventHandler(STGCustomData data, int life);
+
+    // emitted when switching to the next health bar. returns the new bar count.
+    [Signal] public delegate void bar_changedEventHandler(int value);
+
+    // emitted when a sequence is over. used by the plugin itself.
+    [Signal] public delegate void end_sequenceEventHandler();
+
+    // emitted when a spell is over. used by the plugin itself.
+    [Signal] public delegate void end_spellEventHandler();
+
+    // emitted when the battle is over.
+    [Signal] public delegate void end_battleEventHandler();
+
+    // emitted when the screen is cleared of bullets.
+    [Signal] public delegate void clearedEventHandler();
+
+    // emitted when a spawner is done spawning bullets. used by the plugin itself.
+    // this is probably gonna be useless for you.
+    [Signal] public delegate void spawner_doneEventHandler();
+
+    // emitted when a bullet is spawned. returns the spawned bullet.
+    [Signal] public delegate void bullet_spawnedEventHandler(STGBulletInstance bullet);
+
+    // emitted when a bullet is grazed. returns the grazed bullet.
+    [Signal] public delegate void grazeEventHandler(STGBulletInstance bullet);
+
+    // emitted when the health bar is emptied.
     [Signal] public delegate void bar_emptiedEventHandler();
+
+    // emit this signal to stop all the running spawners. does not stop the battle.
+    [Signal] public delegate void stop_all_spawnersEventHandler();
+
+    // emit this signal to send the plugin the health of the enemy.
+    // DO NOT USE THIS SIGNAL. use 'update_health()' instead.
     [Signal] public delegate void damage_takenEventHandler(int new_amount);
+
 
     private PackedScene area_template;
     // private Texture2D remove_template;
@@ -69,16 +97,6 @@ public partial class STGGlobal:Node{
             {"default", 10},
         }
     };
-    System.Collections.Generic.Dictionary<string, Variant>[] sounds = {
-        // new() {
-        //     {"name", "spawn"},
-        //     {"default", "res://addons/GodotSTG/assets/spawn.ogg"},
-        // },
-        new() {
-            {"name", "graze"},
-            {"default", "res://addons/GodotSTG/assets/graze.ogg"},
-        }
-    };
 
     // settings
     private string BULLET_DIRECTORY;
@@ -89,8 +107,6 @@ public partial class STGGlobal:Node{
     private bool ENABLE_PANEL_AT_START;
     private int PANEL_POSITION;
     private uint MULTIMESH_COUNT;
-    // private AudioStream SFX_SPAWN;
-    // private AudioStream SFX_GRAZE;
 
     // low level tomfuckery
     public List<STGShape> bpool = new();
@@ -98,7 +114,6 @@ public partial class STGGlobal:Node{
     public List<STGBulletData> bltdata = new();
     public List<STGBulletInstance> brem = new();
     public List<STGMultiMesh> mmpool = new();
-    public List<STGMultiMesh> multimeshes = new();
     private Area2D _shared_area;
     public Area2D shared_area {
         get{ return _shared_area; }
@@ -130,7 +145,6 @@ public partial class STGGlobal:Node{
     private ulong _fps = 1;
     public ulong start = Time.GetTicksUsec();
     public ulong end;
-    // public int graze_counter {private set; get;}
 
     private static float fdelta = 0.016667F;
     private bool exiting = false;
@@ -140,21 +154,13 @@ public partial class STGGlobal:Node{
         foreach (System.Collections.Generic.Dictionary<string, Variant> _setting in settings){
             Set(((string)_setting["name"]).ToUpper(), ProjectSettings.GetSetting("godotstg/general/" + _setting["name"], _setting["default"]));
         }
-        // foreach (System.Collections.Generic.Dictionary<string, Variant> _setting in sounds){
-        //     Set(("SFX_" + (string)_setting["name"]).ToUpper(), ResourceLoader.Load((string)ProjectSettings.GetSetting("godotstg/sfx/" + _setting["name"], _setting["default"])));
-        // }
     }
-
-    // AudioStreamPlayer spawn_audio;
-    // AudioStreamPlayer graze_audio;
 
     public override async void _Ready(){
         Instance = this; // epic self-reference to access the singleton from everywhere
-        // battle_start += _on_battle_start;
 
         // there is no @onready in c# :sadge: 
         area_template = (PackedScene)ResourceLoader.Load("res://addons/GodotSTG/resources/shared_area.tscn");
-        // remove_template = (Texture2D)ResourceLoader.Load("res://addons/GodotSTG/assets/remove.png");
 
         // loading and preparing all the bullets
         foreach (string file in DirAccess.GetFilesAt(BULLET_DIRECTORY)){
@@ -185,21 +191,10 @@ public partial class STGGlobal:Node{
 	    	PhysicsServer2D.AreaSetShapeDisabled(area_rid, i, true);
             bpool.Add(new STGShape(shape_rid, i));
         }
-        // for (int i = 0; i < MULTIMESH_COUNT; i++){
-        //     mmpool.Add(new());
-        // }
 
         // global clocks cuz yeah
         clock_timer      = GetTree().CreateTimer(TIMER_START, false);
         clock_real_timer = GetTree().CreateTimer(TIMER_START, true);
-
-        // graze_audio = new(){
-        //     MaxPolyphony = 1,
-        //     Stream = SFX_GRAZE,
-        //     PitchScale = 1.0F,
-        //     VolumeDb = -20 // ah yes, negative sound
-        // };
-        // AddChild(graze_audio);
 
         // panel
         panel = (CanvasLayer)((PackedScene)ResourceLoader.Load("res://addons/GodotSTG/panel.tscn")).Instantiate();
@@ -242,10 +237,6 @@ public partial class STGGlobal:Node{
         }
     }
 
-    // void _on_battle_start(){
-    //     graze_counter = 0;
-    // }
-
     // messy fps calculation
     public override void _Process(double delta){
         end = Time.GetTicksUsec();
@@ -280,7 +271,6 @@ public partial class STGGlobal:Node{
     public STGBulletInstance configure_bullet(STGBulletInstance data){
         STGBulletModifier mod = data.next;
         data.lifespan = mod.lifespan > 0 ? mod.lifespan : 999999;
-        // data.texture = textures[mod.id];
         mmpool[data.bid].bullets.Remove(data);
         mmpool[mod.id].bullets.Add(data);
         data.next = mod.next;
@@ -344,8 +334,8 @@ public partial class STGGlobal:Node{
     }
 
     public void clear(){
-        EmitSignal(SignalName.stop_spawner);
-        Parallel.ForEach(multimeshes, mm => {
+        Parallel.ForEach(mmpool, mm => {
+            if (mm.bullets.Count == 0) return;
             foreach (STGBulletInstance blt in mm.bullets){
                 PhysicsServer2D.AreaSetShapeDisabled(area_rid, blt.shape.idx, true);
                 bpool.Add(blt.shape);
@@ -368,8 +358,8 @@ public partial class STGGlobal:Node{
 
     public void exit(){
         exiting = true;
-        //this leaks at exit. memory management is hard. sorry. #todo: fix
         GetTree().Paused = true;
+        //this somehow leaks at exit. memory management is hard. sorry. #todo: fix
         for (int i = PhysicsServer2D.AreaGetShapeCount(area_rid); i > -1; i--){
             PhysicsServer2D.FreeRid(PhysicsServer2D.AreaGetShape(area_rid, i));
         }
@@ -381,6 +371,14 @@ public partial class STGGlobal:Node{
     public float time(bool count_pauses = true){
         if (count_pauses) {return (float)(TIMER_START - clock_real_timer.TimeLeft);}
         else              {return (float)(TIMER_START - clock_timer.TimeLeft);}
+    }
+
+    public void update_health(int new_amount){
+        // okay this is where all logic and reason dies in agony
+        // idk why, but calling the signal directly from gdscript can and will crash your game.
+        // so you have to call it from c# instead.
+        // also it has to be called deferred due to another issue
+        CallDeferred(MethodName.EmitSignal, SignalName.damage_taken, new_amount);
     }
 
 }
