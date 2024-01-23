@@ -24,8 +24,12 @@ public partial class STGBulletInstance:Resource{
         lifespan = modifier.lifespan;
         next = modifier.next;
         tweens = modifier.tweens;
-        custom_data = modifier.outer_color;
-        custom_data.A = modifier.inner_color.V;
+        if (data.colorable){
+            custom_data = modifier.outer_color;
+            custom_data.A = modifier.inner_color.V;
+        } else {
+            custom_data = new Color(1, 1, 1, -1);
+        }
     }
 
     public override string ToString(){

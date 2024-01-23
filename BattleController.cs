@@ -8,20 +8,19 @@ using System.Threading.Tasks;
 public partial class BattleController:Node2D{
     private static STGGlobal STGGlobal;
     [ExportCategory("BattleController")]
-    [Export] private STGStats stats {get; set;}
+    [Export] public STGStats stats {get; set;}
 
-    public SceneTree tree;
-    public Timer timer;
-    public bool is_spell_over;
-    public int flag;
+    private SceneTree tree;
+    private Timer timer;
+    private bool is_spell_over;
+    private int flag;
 
-    public int hp_threshold;
-    public int time_threshold;
+    private int hp_threshold;
+    private int time_threshold;
 
     [Export] public CollisionObject2D player;
     [Export] public CollisionObject2D enemy;
-    [Export] Rect2 arena_rect;
-    string signals_are_hard;
+    [Export] public Rect2 arena_rect;
 
     public override void _Ready(){
         STGGlobal = STGGlobal.Instance;
@@ -51,7 +50,7 @@ public partial class BattleController:Node2D{
         STGGlobal.EmitSignal(STGGlobal.SignalName.battle_start);
         int bar_count = stats.bars.Count;
         STGGlobal.EmitSignal(STGGlobal.SignalName.bar_changed, bar_count);
-        player.Position = STGGlobal.lerp4arena(stats.player_position);
+        // player.Position = STGGlobal.lerp4arena(stats.player_position);
         foreach (STGBar curr_bar in stats.bars){
             foreach (STGSpell curr_spell in curr_bar.spells){
                 is_spell_over = false;
@@ -109,12 +108,14 @@ public partial class BattleController:Node2D{
 
     public override void _Draw(){
         Parallel.ForEach(STGGlobal.mmpool, mm => {
+        // Parallel.For(0, STGGlobal.mmpool.Count - 1, i => {
+            // STGMultiMesh mm = STGGlobal.mmpool[i];
             mm.multimesh.VisibleInstanceCount = mm.bullets.Count;
             if (mm.multimesh.VisibleInstanceCount == 0) return;
-            for (int i = 0; i < mm.bullets.Count; i++){
-                STGBulletInstance blt = mm.bullets[i];
-                mm.multimesh.SetInstanceTransform2D(i, new Transform2D(blt.direction, blt.position));
-                mm.multimesh.SetInstanceCustomData(i, blt.custom_data);
+            for (int j = 0; j < mm.bullets.Count; j++){
+                STGBulletInstance blt = mm.bullets[j];
+                mm.multimesh.SetInstanceTransform2D(j, new Transform2D(blt.direction, blt.position));
+                mm.multimesh.SetInstanceCustomData(j, blt.custom_data);
             }
         });
         // canvasitem functions are not thread-safe i think

@@ -24,11 +24,17 @@ const vec3 WHITE = vec3(1, 1, 1);
 
 // vertex() is called for every vertex (triangles that make up the mesh)
 void vertex(){
-	custom = INSTANCE_CUSTOM.rgba;
+	custom = INSTANCE_CUSTOM;
 }
 
 // fragment() is called for every fragment (pixels with some additional info)
 void fragment(){
-	float g = (COLOR.r + COLOR.g + COLOR.b) / 3.0;
-	COLOR.rgb = g * WHITE * custom.a + (1.0-g) * custom.rgb;
+	// color.a should be set to -1 if colorable is set to false.
+	// so in that case, custom data is just used for modulation.
+	if (custom.a >= 0.0){
+		float g = (COLOR.r + COLOR.g + COLOR.b) / 3.0;
+		COLOR.rgb = g * WHITE * custom.a + (1.0-g) * custom.rgb;
+	} else {
+		COLOR.rgb *= custom.rgb;
+	}
 }

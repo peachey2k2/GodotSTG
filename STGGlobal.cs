@@ -57,13 +57,12 @@ public partial class STGGlobal:Node{
 
 
     private PackedScene area_template;
-    // private Texture2D remove_template;
 
     public BattleController controller {get; set;}
-    public CanvasLayer panel;
+    public CanvasLayer panel {get; set;}
 
     // lists for default settings
-    System.Collections.Generic.Dictionary<string, Variant>[] settings = {
+    private System.Collections.Generic.Dictionary<string, Variant>[] settings = {
         new() {
             {"name", "bullet_directory"},
             {"default", "res://addons/GodotSTG/bullets/"},
@@ -109,22 +108,22 @@ public partial class STGGlobal:Node{
     private uint MULTIMESH_COUNT;
 
     // low level tomfuckery
-    public List<STGShape> bpool = new();
-    public List<STGBulletInstance> bqueue = new();
-    public List<STGBulletData> bltdata = new();
-    public List<STGBulletInstance> brem = new();
-    public List<STGMultiMesh> mmpool = new();
+    public List<STGShape> bpool {get; set;} = new();
+    public List<STGBulletInstance> bqueue {get; set;} = new();
+    public List<STGBulletData> bltdata {get; set;} = new();
+    public List<STGBulletInstance> brem {get; set;} = new();
+    public List<STGMultiMesh> mmpool {get; set;} = new();
     private Area2D _shared_area;
     public Area2D shared_area {
         get{ return _shared_area; }
-        set{
+        private set{
             area_rid = value.GetRid();
             _shared_area = value;
             shared_area.CollisionLayer = COLLISION_LAYER;
         }
     }
-    public Rid area_rid {private set; get;}
-    private Rect2 _arena_rect;
+    public Rid area_rid {get; private set;}
+    private Rect2 _arena_rect {get; set;}
     public Rect2 arena_rect {
         get{ return _arena_rect; }
         set{
@@ -136,28 +135,29 @@ public partial class STGGlobal:Node{
     public int bullet_count {get; set;} = 0;
 
     // clocks
-    const float TIMER_START = 10000000;
-    public float clock;
-    public float clock_real;
-    public SceneTreeTimer clock_timer;
-    public SceneTreeTimer clock_real_timer;
+    private const float TIMER_START = 10000000;
+    private float clock;
+    private float clock_real;
+    private SceneTreeTimer clock_timer;
+    private SceneTreeTimer clock_real_timer;
     public ulong fps {private set; get;}
     private ulong _fps = 1;
     public ulong start = Time.GetTicksUsec();
     public ulong end;
 
-    private static float fdelta = 0.016667F;
     private bool exiting = false;
     public static STGGlobal Instance { get; private set; }
 
     public STGGlobal(){
+        // pull the settings from the project settings for ease of access
         foreach (System.Collections.Generic.Dictionary<string, Variant> _setting in settings){
             Set(((string)_setting["name"]).ToUpper(), ProjectSettings.GetSetting("godotstg/general/" + _setting["name"], _setting["default"]));
         }
     }
 
     public override async void _Ready(){
-        Instance = this; // epic self-reference to access the singleton from everywhere
+        // epic self-reference to access the singleton from everywhere
+        Instance = this;
 
         // there is no @onready in c# :sadge: 
         area_template = (PackedScene)ResourceLoader.Load("res://addons/GodotSTG/resources/shared_area.tscn");
@@ -180,6 +180,11 @@ public partial class STGGlobal:Node{
                     InstanceCount = (int)POOL_SIZE,
                 }
             });
+            // if (!bltdata.Last().colorable){
+            //     for (int i = 0; i < POOL_SIZE; i++){
+            //         mmpool.Last().multimesh.SetInstanceCustomData(i, new Color(-1, -1, -1, -1));
+            //     }
+            // }
         }
 
         // pooling lol
@@ -289,7 +294,7 @@ public partial class STGGlobal:Node{
         bqueue.Clear();
         Parallel.ForEach(mmpool, mm => {
             Parallel.ForEach(mm.bullets, blt => {
-                if (blt.lifespan >= 0) blt.lifespan -= fdelta;
+                if (blt.lifespan >= 0) blt.lifespan -= delta;
                 else bqueue.Add(blt);
                 foreach (STGTween tw in blt.tweens){
                     if (blt.current < tw.list.Count){
@@ -300,7 +305,7 @@ public partial class STGGlobal:Node{
                 // home the bullet if it's homing
                 blt.direction = Clamp(blt.position.AngleToPoint(player_pos), blt.direction - blt.homing, blt.direction + blt.homing);
                 // move the bullet
-                blt.position += Vector2.Right.Rotated(blt.direction) * blt.magnitude * fdelta;
+                blt.position += Vector2.Right.Rotated(blt.direction) * blt.magnitude * (float)delta;
                 Transform2D t = new(0, blt.position);
                 // remove if out of bounds
                 if (!arena_rect_margined.HasPoint(blt.position)){
@@ -380,5 +385,4 @@ public partial class STGGlobal:Node{
         // also it has to be called deferred due to another issue
         CallDeferred(MethodName.EmitSignal, SignalName.damage_taken, new_amount);
     }
-
 }
