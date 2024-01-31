@@ -1,6 +1,5 @@
 using Godot;
 using GodotSTG;
-using Godot.Collections;
 using System;
 using System.Threading.Tasks;
 
@@ -11,7 +10,8 @@ public partial class BattleController:Node2D{
     [Export] public STGStats stats {get; set;}
 
     private SceneTree tree;
-    private Timer timer;
+    private Godot.Timer timer;
+    private SceneTreeTimer cur_timer = null;
     private bool is_spell_over;
     private int flag;
 
@@ -36,13 +36,19 @@ public partial class BattleController:Node2D{
         Material = new ShaderMaterial(){
             Shader = (Shader)ResourceLoader.Load("res://addons/GodotSTG/BulletModulate.gdshader")
         };
-        
+    }
+
+    public STGCustomData get_data(int bar, int spell){
+        return stats.bars[bar].spells[spell].custom_data;
     }
 
     public async void start(){
         GodotSTG.Debug.Assert(player != null, "\"player\" has to be set in order for start() to work.");
         GodotSTG.Debug.Assert(enemy != null, "\"enemy\" has to be set in order for start() to work.");
         // GodotSTG.Debug.Assert(arena_rect != null, "\"arena_rect\" has to be set in order for start() to work.");
+        if (cur_timer != null && IsInstanceValid(cur_timer)){
+            cur_timer.EmitSignal(SceneTreeTimer.SignalName.Timeout);
+        }
         STGGlobal.clear();
         STGGlobal.shared_area.Reparent(this, false);
         STGGlobal.controller = this;
@@ -50,7 +56,6 @@ public partial class BattleController:Node2D{
         STGGlobal.EmitSignal(STGGlobal.SignalName.battle_start);
         int bar_count = stats.bars.Count;
         STGGlobal.EmitSignal(STGGlobal.SignalName.bar_changed, bar_count);
-        // player.Position = STGGlobal.lerp4arena(stats.player_position);
         foreach (STGBar curr_bar in stats.bars){
             foreach (STGSpell curr_spell in curr_bar.spells){
                 is_spell_over = false;
@@ -58,30 +63,27 @@ public partial class BattleController:Node2D{
                 timer.WaitTime = curr_spell.time;
                 timer.Start();
                 STGGlobal.EmitSignal(STGGlobal.SignalName.spell_changed, curr_spell.custom_data, curr_spell.health);
-                flag++; // timer await is encapsulated in flag increments and decrements
-                await ToSignal(GetTree().CreateTimer(curr_spell.wait_before, false), SceneTreeTimer.SignalName.Timeout);
-                flag--; // to prevent running multiple instances at the same time
-                if (flag > 0) return;
+                cur_timer = GetTree().CreateTimer(curr_spell.wait_before, false);
+                await ToSignal(cur_timer, SceneTreeTimer.SignalName.Timeout);
                 while (!is_spell_over){
                     foreach (STGSequence curr_sequence in curr_spell.sequences){
                         if (is_spell_over) break;
                         hp_threshold = curr_sequence.end_at_hp;
                         time_threshold = curr_sequence.end_at_time;
                         curr_sequence.spawn_sequence();
-                        flag++; // timer await is encapsulated in flag increments and decrements
                         await ToSignal(STGGlobal, STGGlobal.SignalName.end_sequence); //
-                        if (is_spell_over){
-                            flag--;
-                            break;
-                        }
-                        await ToSignal(GetTree().CreateTimer(curr_spell.wait_between, false), SceneTreeTimer.SignalName.Timeout); //
-                        flag--; // to prevent running multiple instances at the same time
-                        if (flag > 0) return;
+                        if (is_spell_over) break;
+                        cur_timer = GetTree().CreateTimer(curr_spell.wait_between, false); //
+                        await ToSignal(cur_timer, SceneTreeTimer.SignalName.Timeout);
+                        if (is_spell_over) break;
                         if ((curr_spell.sequence_flags&4) == 4) STGGlobal.clear();
                     }
                     if ((curr_spell.sequence_flags&2) == 0) break;
                 }
-                await ToSignal(STGGlobal, STGGlobal.SignalName.end_spell);
+                if (!is_spell_over){
+                    await ToSignal(STGGlobal, STGGlobal.SignalName.end_spell);
+                }
+                timer.Stop();
                 GC.Collect(); // force collect to prevent future lag spikes
             }
             bar_count -= 1;
