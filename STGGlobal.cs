@@ -108,10 +108,9 @@ public partial class STGGlobal:Node{
     private uint MULTIMESH_COUNT;
 
     // low level tomfuckery
+    public List<STGBulletData> bltdata {get; set;} = new();
     public List<STGShape> bpool {get; set;} = new();
     public List<STGBulletInstance> bqueue {get; set;} = new();
-    public List<STGBulletData> bltdata {get; set;} = new();
-    public List<STGBulletInstance> brem {get; set;} = new();
     public List<STGMultiMesh> mmpool {get; set;} = new();
     private Area2D _shared_area;
     public Area2D shared_area {
@@ -227,7 +226,6 @@ public partial class STGGlobal:Node{
         Label PoolSize = (Label)panel.GetNode("Panel/VBoxContainer/PoolSize/count");
         Label Pooled   = (Label)panel.GetNode("Panel/VBoxContainer/Pooled/count");
         Label Active   = (Label)panel.GetNode("Panel/VBoxContainer/Active/count");
-        Label Removing = (Label)panel.GetNode("Panel/VBoxContainer/Removing/count");
         Label Textures = (Label)panel.GetNode("Panel/VBoxContainer/Textures/count");
         Label FPS      = (Label)panel.GetNode("Panel/VBoxContainer/FPS/count");
 
@@ -236,7 +234,6 @@ public partial class STGGlobal:Node{
             await Task.Delay(250);
             Pooled  .Text = bpool.Count.ToString();
             Active  .Text = bullet_count.ToString();
-            Removing.Text = brem.Count.ToString();
             Textures.Text = bltdata.Count.ToString();
             FPS     .Text = fps.ToString();
         }
