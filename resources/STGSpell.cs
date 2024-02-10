@@ -11,7 +11,7 @@ public partial class STGSpell:Resource{
 
     [Export] public STGCustomData custom_data {get; set;} = new();
     // [Export] public string name {get; set;}
-    [Export] public int health {get; set;}
+    // [Export] public int health {get; set;}
     [Export] public int time {get; set;}
     // [Export] public Color bar_color {get; set;} = Colors.White; // WHY IS IT COLORS AND NOT COLOR???
     [Export] public Vector2 enemy_pos {get; set;}

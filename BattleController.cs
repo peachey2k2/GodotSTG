@@ -1,4 +1,5 @@
 using Godot;
+using Godot.Collections;
 using GodotSTG;
 using System;
 using System.Threading.Tasks;
@@ -38,10 +39,6 @@ public partial class BattleController:Node2D{
         };
     }
 
-    public STGCustomData get_data(int bar, int spell){
-        return stats.bars[bar].spells[spell].custom_data;
-    }
-
     public async void start(){
         GodotSTG.Debug.Assert(player != null, "\"player\" has to be set in order for start() to work.");
         GodotSTG.Debug.Assert(enemy != null, "\"enemy\" has to be set in order for start() to work.");
@@ -54,7 +51,7 @@ public partial class BattleController:Node2D{
         STGGlobal.controller = this;
         STGGlobal.arena_rect = arena_rect;
         STGGlobal.EmitSignal(STGGlobal.SignalName.battle_start);
-        int bar_count = stats.bars.Count;
+        int bar_count = stats.bars.Count - 1;
         STGGlobal.EmitSignal(STGGlobal.SignalName.bar_changed, bar_count);
         foreach (STGBar curr_bar in stats.bars){
             foreach (STGSpell curr_spell in curr_bar.spells){
@@ -62,7 +59,7 @@ public partial class BattleController:Node2D{
                 enemy.Position = STGGlobal.lerp4arena(curr_spell.enemy_pos);
                 timer.WaitTime = curr_spell.time;
                 timer.Start();
-                STGGlobal.EmitSignal(STGGlobal.SignalName.spell_changed, curr_spell.custom_data, curr_spell.health);
+                STGGlobal.EmitSignal(STGGlobal.SignalName.spell_changed, curr_spell.custom_data);
                 cur_timer = GetTree().CreateTimer(curr_spell.wait_before, false);
                 await ToSignal(cur_timer, SceneTreeTimer.SignalName.Timeout);
                 while (!is_spell_over){
