@@ -18,7 +18,7 @@ public partial class STGGlobal:Node{
     [Signal] public delegate void battle_startEventHandler();
 
     // emitted when a new spell starts.
-    [Signal] public delegate void spell_changedEventHandler(STGCustomData data, int life);
+    [Signal] public delegate void spell_changedEventHandler(STGCustomData data);
 
     // emitted when switching to the next health bar. returns the new bar count.
     [Signal] public delegate void bar_changedEventHandler(int value);
@@ -226,7 +226,7 @@ public partial class STGGlobal:Node{
         Label PoolSize = (Label)panel.GetNode("Panel/VBoxContainer/PoolSize/count");
         Label Pooled   = (Label)panel.GetNode("Panel/VBoxContainer/Pooled/count");
         Label Active   = (Label)panel.GetNode("Panel/VBoxContainer/Active/count");
-        Label Textures = (Label)panel.GetNode("Panel/VBoxContainer/Textures/count");
+        Label Bullets  = (Label)panel.GetNode("Panel/VBoxContainer/Bullets/count");
         Label FPS      = (Label)panel.GetNode("Panel/VBoxContainer/FPS/count");
 
         PoolSize.Text = POOL_SIZE.ToString();
@@ -234,7 +234,7 @@ public partial class STGGlobal:Node{
             await Task.Delay(250);
             Pooled  .Text = bpool.Count.ToString();
             Active  .Text = bullet_count.ToString();
-            Textures.Text = bltdata.Count.ToString();
+            Bullets .Text = bltdata.Count.ToString();
             FPS     .Text = fps.ToString();
         }
     }
@@ -242,11 +242,11 @@ public partial class STGGlobal:Node{
     // messy fps calculation
     public override void _Process(double delta){
         end = Time.GetTicksUsec();
-        if (end - start < 500000){
+        if (end - start < 1000000){
             _fps += 1;
         } else {
             start = end;
-            fps = _fps * 2;
+            fps = _fps;
             _fps = 1;
         }
     }

@@ -57,11 +57,11 @@ public partial class BattleController:Node2D{
             foreach (STGSpell curr_spell in curr_bar.spells){
                 is_spell_over = false;
                 enemy.Position = STGGlobal.lerp4arena(curr_spell.enemy_pos);
-                timer.WaitTime = curr_spell.time;
-                timer.Start();
                 STGGlobal.EmitSignal(STGGlobal.SignalName.spell_changed, curr_spell.custom_data);
                 cur_timer = GetTree().CreateTimer(curr_spell.wait_before, false);
                 await ToSignal(cur_timer, SceneTreeTimer.SignalName.Timeout);
+                timer.WaitTime = curr_spell.time;
+                timer.Start();
                 while (!is_spell_over){
                     foreach (STGSequence curr_sequence in curr_spell.sequences){
                         if (is_spell_over) break;

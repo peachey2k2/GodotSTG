@@ -89,12 +89,12 @@ text = "0"
 label_settings = SubResource("LabelSettings_sgqpp")
 horizontal_alignment = 2
 
-[node name="Textures" type="Label" parent="Panel/VBoxContainer"]
+[node name="Bullets" type="Label" parent="Panel/VBoxContainer"]
 layout_mode = 2
-text = "Textures:"
+text = "Bullets:"
 label_settings = SubResource("LabelSettings_57smt")
 
-[node name="count" type="Label" parent="Panel/VBoxContainer/Textures"]
+[node name="count" type="Label" parent="Panel/VBoxContainer/Bullets"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
