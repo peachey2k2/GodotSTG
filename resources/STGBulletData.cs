@@ -61,6 +61,16 @@ public partial class STGBulletData:Resource{
         }
         get{ return _white; }
     }
+    private float _alpha = 1;
+    [Export(PropertyHint.Range, "0,1")] public float alpha{
+        set{
+            _alpha = value;
+            if (IsInstanceValid(preview)){
+                UpdateColor();
+            }
+        }
+        get{ return _alpha; }
+    }
     private bool _show_hitbox = true;
     [Export] public bool show_hitbox{
         set{
@@ -83,6 +93,7 @@ public partial class STGBulletData:Resource{
     public void UpdateColor(){
         ((ShaderMaterial)preview.Bullet.Material).SetShaderParameter("black", black);
         ((ShaderMaterial)preview.Bullet.Material).SetShaderParameter("white", white);
+        ((ShaderMaterial)preview.Bullet.Material).SetShaderParameter("alpha", alpha);
     }
 #endif
 

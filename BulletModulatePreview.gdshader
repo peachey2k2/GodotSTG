@@ -15,6 +15,13 @@ shader_type canvas_item;
 // clarify the hint so we have a color picker in the editor.
 uniform vec3 black : source_color = vec3(0.0);
 uniform vec3 white : source_color = vec3(1.0);
+uniform float alpha : hint_range(0.0, 1.0) = 1.0;
+
+// vertex() is called for every vertex
+void vertex(){
+	// modify the alpha channel
+	COLOR.a *= alpha;
+}
 
 // fragment() is called for every fragment (pixels with some additional info)
 void fragment(){
@@ -24,5 +31,6 @@ void fragment(){
 	
 	// use grayscale values to replace blacks and whites
 	COLOR.rgb = g * white + (1.0-g) * black;
+	
 }
 

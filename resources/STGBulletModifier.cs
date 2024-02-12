@@ -15,6 +15,6 @@ public partial class STGBulletModifier:Resource{
     [Export] public Array<STGTween> tweens = new();
     [Export] public STGBulletModifier next {get; set;}
 
-    // this are automatically set at runtime. dw about it.
+    // this is automatically set at runtime. dw about it.
     public int id = -1;
 }

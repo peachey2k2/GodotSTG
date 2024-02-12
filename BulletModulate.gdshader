@@ -8,6 +8,10 @@
  / of the bullets, which we don't want to.
 */ 
 
+// if you're new to shaders and looking here to see an example, you
+// might wanna look at BulletModulatePreview.gdshader since it basically
+// does the same thing but is more clear, so you can follow it easier.
+
 // shader type is canvas_item since we're working with 2d here.
 shader_type canvas_item;
 
@@ -18,23 +22,24 @@ render_mode unshaded;
 // varying means this value is seperate for every vertex.
 // it allows us to send data from vertex() to fragment().
 varying vec4 custom;
+varying vec3 white; 
+varying vec3 black;
 
-// you probably know what a constant is.
-const vec3 WHITE = vec3(1, 1, 1);
-
-// vertex() is called for every vertex (triangles that make up the mesh)
 void vertex(){
 	custom = INSTANCE_CUSTOM;
+	if (custom.a <= 1.5){
+		COLOR.a *= custom.a;
+		vec3 temp = floor(custom.rgb);
+		black = temp / 256.0;
+		white = custom.rgb - temp;
+	}
 }
 
-// fragment() is called for every fragment (pixels with some additional info)
 void fragment(){
-	// color.a should be set to -1 if colorable is set to false.
-	// so in that case, custom data is just used for modulation.
-	if (custom.a >= 0.0){
+	if (custom.a <= 1.5){
 		float g = (COLOR.r + COLOR.g + COLOR.b) / 3.0;
-		COLOR.rgb = g * WHITE * custom.a + (1.0-g) * custom.rgb;
+		COLOR.rgb = g * white + (1.0-g) * black;
 	} else {
-		COLOR.rgb *= custom.rgb;
+		COLOR.rgba *= custom.rgba;
 	}
 }
