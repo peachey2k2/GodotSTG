@@ -25,16 +25,15 @@ public partial class STGBulletInstance:Resource{
         lifespan = modifier.lifespan;
         next = modifier.next;
         tweens = modifier.tweens;
-        float alpha = 1;
         if (data.colorable){
-            custom_data = pack_color(modifier.outer_color, modifier.inner_color, alpha);
+            custom_data = pack_color(modifier.outer_color, modifier.inner_color, modifier.alpha);
         } else {
-            custom_data = new Color(1, 1, 1, alpha + 2);
+            custom_data = new Color(1, 1, 1, modifier.alpha + 2);
         }
     }
 
     private Color pack_color(Color outer, Color inner, float alpha){
-        return new(outer * 256 + inner * (float)0.9999, alpha); //todo: add option to edit alpha too
+        return new(outer * 256 + inner * (float)0.9999, alpha);
     }
     public override string ToString(){
         return $"STGBulletInstance [iid:{GetInstanceId()} bid:{bid} pos:{position}]";
