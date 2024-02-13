@@ -9,7 +9,6 @@ GodotSTG is a series of state machines that offers you a streamlined way to make
 -  A way to add your custom bullets
 -  Performance improvements that allow thousands of bullets with little overhead
 -  Tons of signals to adapt the plugin into any workflow
--  A way to play individual spells (not yet implemented)
 -  Manupulate player and enemy positions (not yet implemented)
 
 # How to use
