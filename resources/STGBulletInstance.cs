@@ -4,6 +4,7 @@ using Godot.Collections;
 
 namespace GodotSTG;
 
+[GlobalClass]
 public partial class STGBulletInstance:Resource{
     public int bid;
     public float collision_radius;
@@ -35,6 +36,11 @@ public partial class STGBulletInstance:Resource{
     private Color pack_color(Color outer, Color inner, float alpha){
         return new(outer * 256 + inner * (float)0.9999, alpha);
     }
+
+    public void set_color(Color outer, Color inner, float alpha){
+        custom_data = pack_color(outer, inner, alpha);
+    }
+
     public override string ToString(){
         return $"STGBulletInstance [iid:{GetInstanceId()} bid:{bid} pos:{position}]";
     }
