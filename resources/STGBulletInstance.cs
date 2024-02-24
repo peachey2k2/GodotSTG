@@ -20,7 +20,7 @@ public partial class STGBulletInstance:Resource{
     public STGShape shape;
     public STGBulletModifier next;
     
-    private static const float ALMOST_ONE = (float)0.9999;
+    private const float ALMOST_ONE = (float)0.9999;
 
     public STGBulletInstance(STGBulletData data, STGBulletModifier modifier){
         bid = data.bid;
