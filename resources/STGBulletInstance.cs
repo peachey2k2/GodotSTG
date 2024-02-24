@@ -19,6 +19,8 @@ public partial class STGBulletInstance:Resource{
     public Color custom_data;
     public STGShape shape;
     public STGBulletModifier next;
+    
+    private static const float ALMOST_ONE = (float)0.9999;
 
     public STGBulletInstance(STGBulletData data, STGBulletModifier modifier){
         bid = data.bid;
@@ -29,12 +31,12 @@ public partial class STGBulletInstance:Resource{
         if (data.colorable){
             custom_data = pack_color(modifier.outer_color, modifier.inner_color, modifier.alpha);
         } else {
-            custom_data = new Color(1, 1, 1, modifier.alpha + 2);
+            custom_data = new Color(1, 1, 1, -modifier.alpha);
         }
     }
 
     private Color pack_color(Color outer, Color inner, float alpha){
-        return new(outer * 256 + inner * (float)0.9999, alpha);
+        return new(outer * 256 + inner * ALMOST_ONE, alpha);
     }
 
     public void set_color(Color outer, Color inner, float alpha){

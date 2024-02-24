@@ -27,7 +27,7 @@ varying vec3 black;
 
 void vertex(){
 	custom = INSTANCE_CUSTOM;
-	if (custom.a <= 1.5){
+	if (custom.a <= 0.0){
 		COLOR.a *= custom.a;
 		vec3 temp = floor(custom.rgb);
 		black = temp / 256.0;
@@ -36,10 +36,11 @@ void vertex(){
 }
 
 void fragment(){
-	if (custom.a <= 1.5){
+	if (custom.a <= 0.0){
 		float g = (COLOR.r + COLOR.g + COLOR.b) / 3.0;
 		COLOR.rgb = g * white + (1.0-g) * black;
 	} else {
-		COLOR.rgba *= custom.rgba;
+		COLOR.rgb *= custom.rgb;
+		COLOR.a = -custom.a;
 	}
 }
