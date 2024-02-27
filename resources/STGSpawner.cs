@@ -6,20 +6,18 @@ using GodotSTG;
 
 namespace GodotSTG;
 
-[GlobalClass]
-public partial class STGSpawner:Resource{
+[GlobalClass, Icon("res://addons/GodotSTG/assets/spawner.png")]
+public partial class STGSpawner:Node{
     
     public static STGGlobal STGGlobal;
     public static SceneTree tree;
     public enum PosType{Absolute, Relative}
     public enum Towards{Generic, Player}
 
-    [ExportGroup("Spawner")]
     [Export] public Vector2 position {get; set;}
     [Export] public PosType position_type {get; set;}
     [Export] public float rotation_speed {get; set;}
 
-    [ExportGroup("Bullet")]
     [Export] public STGBulletModifier bullet {get; set;}
 
     public Vector2 real_pos;
@@ -36,7 +34,7 @@ public partial class STGSpawner:Resource{
         if (is_running) return;
         is_running = true;
         stop_flag = false;
-        bdata = STGGlobal.bltdata[bullet.bullet_id];
+        bdata = STGGlobal.bltdata[bullet.bullet_id]; // if this errored, you probably forgot to give the spawner a bullet
         // tex = STGGlobal.textures[bullet.id];
         if (position_type == PosType.Relative){
             real_pos = STGGlobal.lerp4arena(position) + STGGlobal.controller.enemy.Position - STGGlobal.arena_rect.Position;

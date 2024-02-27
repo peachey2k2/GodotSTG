@@ -5,7 +5,6 @@ namespace GodotSTG;
 
 [GlobalClass]
 public partial class CircularSpawner:STGSpawner{
-	[ExportGroup("Pattern")]
 	private double _init_angle;
 	public double init_angle_rad;
 	[Export] public double init_angle{

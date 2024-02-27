@@ -5,7 +5,7 @@ using GodotSTG;
 
 namespace GodotSTG;
 
-[GlobalClass]
-public partial class STGBar:Resource{
-    [Export] public Array<STGSpell> spells {get; set;} = new();
+[GlobalClass, Icon("res://addons/GodotSTG/assets/bar.png")]
+public partial class STGBar:Node{
+    
 }

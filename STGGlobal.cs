@@ -21,7 +21,7 @@ public partial class STGGlobal:Node{
     [Signal] public delegate void spell_changedEventHandler(STGCustomData data);
 
     // emitted when switching to the next health bar. returns the new bar count.
-    [Signal] public delegate void bar_changedEventHandler(int value);
+    [Signal] public delegate void bar_changedEventHandler(int value, Array<STGCustomData> datas);
 
     // emitted when a sequence is over. used by the plugin itself.
     [Signal] public delegate void end_sequenceEventHandler();

@@ -1,14 +1,15 @@
 using Godot;
 using Godot.Collections;
+using System.Collections.Generic;
 using GodotSTG;
 using System;
 using System.Threading.Tasks;
 
 [GlobalClass, Icon("res://addons/GodotSTG/assets/battlecontroller.png")]
 public partial class BattleController:Node2D{
+    private List<STGBar> bars;
     private static STGGlobal STGGlobal;
     [ExportCategory("BattleController")]
-    [Export] public STGStats stats {get; set;}
 
     private SceneTree tree;
     private Godot.Timer timer;
@@ -37,6 +38,13 @@ public partial class BattleController:Node2D{
         Material = new ShaderMaterial(){
             Shader = (Shader)ResourceLoader.Load("res://addons/GodotSTG/BulletModulate.gdshader")
         };
+
+        bars = new();
+        foreach (Node child in GetChildren()){
+            if (child is STGBar bar){
+                bars.Add(bar);
+            }
+        }
     }
 
     public async void start(){
@@ -51,10 +59,11 @@ public partial class BattleController:Node2D{
         STGGlobal.controller = this;
         STGGlobal.arena_rect = arena_rect;
         STGGlobal.EmitSignal(STGGlobal.SignalName.battle_start);
-        int bar_count = stats.bars.Count - 1;
-        STGGlobal.EmitSignal(STGGlobal.SignalName.bar_changed, bar_count);
-        foreach (STGBar curr_bar in stats.bars){
-            foreach (STGSpell curr_spell in curr_bar.spells){
+        int bar_count = bars.Count - 1;
+        foreach (STGBar curr_bar in bars){
+            STGGlobal.EmitSignal(STGGlobal.SignalName.bar_changed, bar_count, get_datas(curr_bar));
+            foreach (Node bar_child in curr_bar.GetChildren()){
+                if (bar_child is not STGSpell curr_spell) return;
                 is_spell_over = false;
                 enemy.Position = STGGlobal.lerp4arena(curr_spell.enemy_pos);
                 STGGlobal.EmitSignal(STGGlobal.SignalName.spell_changed, curr_spell.custom_data);
@@ -63,7 +72,8 @@ public partial class BattleController:Node2D{
                 timer.WaitTime = curr_spell.time;
                 timer.Start();
                 while (!is_spell_over){
-                    foreach (STGSequence curr_sequence in curr_spell.sequences){
+                    foreach (Node spell_child in curr_spell.GetChildren()){
+                        if (spell_child is not STGSequence curr_sequence) return;
                         if (is_spell_over) break;
                         hp_threshold = curr_sequence.end_at_hp;
                         time_threshold = curr_sequence.end_at_time;
@@ -84,9 +94,18 @@ public partial class BattleController:Node2D{
                 GC.Collect(); // force collect to prevent future lag spikes
             }
             bar_count -= 1;
-            STGGlobal.EmitSignal(STGGlobal.SignalName.bar_changed, bar_count);
         }
         STGGlobal.EmitSignal(STGGlobal.SignalName.end_battle);
+    }
+
+    private Array<STGCustomData> get_datas(STGBar bar){
+        Array<STGCustomData> datas = new();
+        foreach (Node child in bar.GetChildren()){
+            if (child is STGSpell spell){
+                datas.Add(spell.custom_data);
+            }
+        }
+        return datas;
     }
 
     // use this function to safely delete the battle controller.

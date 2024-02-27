@@ -4,17 +4,18 @@ using GodotSTG;
 
 namespace GodotSTG;
 
-[GlobalClass]
-public partial class STGSequence:Resource{
+[GlobalClass, Icon("res://addons/GodotSTG/assets/sequence.png")]
+public partial class STGSequence:Node{
     
     // [Export] public float wait_before {get; set;} = 1;
     [Export] public int end_at_hp {get; set;} = -1;
     [Export] public int end_at_time {get; set;} = -1;
     [Export] public bool persist {get; set;} = false;
-    [Export] public Array<STGSpawner> spawners {get; set;} = new();
     public async void spawn_sequence(){
-        foreach (STGSpawner spw in spawners){
-            spw.spawn();
+        foreach (Node child in GetChildren()){
+            if (child is STGSpawner spawner){
+                spawner.spawn();
+            }
         }
         await ToSignal(STGGlobal.Instance, STGGlobal.SignalName.spawner_done);
         STGGlobal.Instance.EmitSignal(STGGlobal.SignalName.end_sequence);
