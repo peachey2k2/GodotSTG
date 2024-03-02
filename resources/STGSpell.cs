@@ -17,7 +17,7 @@ public partial class STGSpell:Node{
     [Export] public Vector2 enemy_pos {get; set;} = new(0.5f, 0.5f);
     [Export] public Movement enemy_movement {get; set;}
     // [Export] public Shield shield {get; set;}
-    [Export] public float wait_before {get; set;}
+    [Export] public float wait_before {get; set;} = 1.0f; // setting this to zero may cause spells being skipped
     [Export] public float wait_between {get; set;}
     [Export(PropertyHint.Flags, 
         "Randomize sequences:1,"+
