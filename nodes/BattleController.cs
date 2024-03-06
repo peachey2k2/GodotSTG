@@ -60,10 +60,11 @@ public partial class BattleController:Node2D{
         STGGlobal.arena_rect = arena_rect;
         STGGlobal.EmitSignal(STGGlobal.SignalName.battle_start);
         int bar_count = bars.Count - 1;
+        GD.Print("Starting battle...");
         foreach (STGBar curr_bar in bars){
             STGGlobal.EmitSignal(STGGlobal.SignalName.bar_changed, bar_count, get_datas(curr_bar));
             foreach (Node bar_child in curr_bar.GetChildren()){
-                if (bar_child is not STGSpell curr_spell) return;
+                if (bar_child is not STGSpell curr_spell) continue;
                 is_spell_over = false;
                 enemy.Position = STGGlobal.lerp4arena(curr_spell.enemy_pos);
                 STGGlobal.EmitSignal(STGGlobal.SignalName.spell_changed, curr_spell.custom_data);
@@ -73,7 +74,7 @@ public partial class BattleController:Node2D{
                 timer.Start();
                 while (!is_spell_over){
                     foreach (Node spell_child in curr_spell.GetChildren()){
-                        if (spell_child is not STGSequence curr_sequence) return;
+                        if (spell_child is not STGSequence curr_sequence) continue;
                         if (is_spell_over) break;
                         hp_threshold = curr_sequence.end_at_hp;
                         time_threshold = curr_sequence.end_at_time;

@@ -9,7 +9,7 @@ namespace GodotSTG;
 public partial class STGSpell:Node{
     public enum Movement{Static, Random}
 
-    [Export] public STGCustomData custom_data {get; set;} = new();
+    [Export] public STGCustomData custom_data {get; set;}
     // [Export] public string name {get; set;}
     // [Export] public int health {get; set;}
     [Export] public int time {get; set;} = 30;

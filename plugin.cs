@@ -69,7 +69,7 @@ public partial class plugin:EditorPlugin{
 	STGBulletPreview preview = new();
 
 	public override void _EnterTree(){
-		AddAutoloadSingleton("STGGlobal", "res://addons/GodotSTG/STGGlobal.cs");
+		AddAutoloadSingleton("STGGlobal", "res://addons/GodotSTG/nodes/STGGlobal.cs");
 		AddInspectorPlugin(preview);
 		_setup_settings();
 	}
