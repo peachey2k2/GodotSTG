@@ -15,7 +15,7 @@ public partial class PreviewScene:Control{
         Background = (TextureRect)GetChild(0);
         Bullet = (TextureRect)GetChild(1);
         Outline = (TextureRect)GetChild(2);
-        Hitbox = (CollisionShape2D)Outline.GetChild(0);
+        Hitbox = (CollisionShape2D)Outline.GetChild(0).GetChild(0);
     }
 }
 #endif
