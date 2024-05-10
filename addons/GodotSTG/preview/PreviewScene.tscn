@@ -1,14 +1,8 @@
-[gd_scene load_steps=9 format=3 uid="uid://carikoua6ss05"]
+[gd_scene load_steps=8 format=3 uid="uid://carikoua6ss05"]
 
 [ext_resource type="Script" path="res://addons/GodotSTG/preview/PreviewScene.cs" id="1_fpnra"]
 [ext_resource type="Shader" path="res://addons/GodotSTG/BulletModulatePreview.gdshader" id="2_m1xt6"]
-
-[sub_resource type="Gradient" id="Gradient_gnc3p"]
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_rux3h"]
-gradient = SubResource("Gradient_gnc3p")
-fill_from = Vector2(1, 1)
-fill_to = Vector2(0, 0)
+[ext_resource type="Texture2D" uid="uid://rjuuu3alimn6" path="res://addons/GodotSTG/assets/preview_bg.png" id="2_t5mkg"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_tjh0p"]
 shader = ExtResource("2_m1xt6")
@@ -42,20 +36,22 @@ script = ExtResource("1_fpnra")
 
 [node name="Background" type="TextureRect" parent="."]
 clip_children = 2
-custom_minimum_size = Vector2(192, 192)
+texture_filter = 1
+custom_minimum_size = Vector2(186, 186)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -96.0
-offset_top = -96.0
-offset_right = 96.0
-offset_bottom = 96.0
+offset_left = -8.0
+offset_top = -8.0
+offset_right = 8.0
+offset_bottom = 8.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = SubResource("GradientTexture2D_rux3h")
+texture = ExtResource("2_t5mkg")
+stretch_mode = 1
 
 [node name="Bullet" type="TextureRect" parent="."]
 material = SubResource("ShaderMaterial_tjh0p")
@@ -75,6 +71,7 @@ grow_vertical = 2
 stretch_mode = 5
 
 [node name="Outline" type="TextureRect" parent="."]
+texture_filter = 1
 custom_minimum_size = Vector2(192, 192)
 layout_mode = 1
 anchors_preset = 8
