@@ -74,7 +74,7 @@ public partial class plugin:EditorPlugin{
 		_setup_settings();
 	}
 
-	public override void _ExitTree(){
+	public override void _DisablePlugin(){
 		RemoveAutoloadSingleton("STGGlobal");
 		RemoveInspectorPlugin(preview);
 	}

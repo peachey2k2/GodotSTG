@@ -102,5 +102,5 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Hitbox" type="CollisionShape2D" parent="Outline/Clip"]
-position = Vector2(96, 96)
+position = Vector2(93, 93)
 shape = SubResource("CircleShape2D_khadi")
