@@ -3,7 +3,7 @@
 > [!IMPORTANT]
 > This plugin is currently in beta. Some features may be missing or buggy. Please report any problems that you find.
 
-GodotSTG is a series of state machines that offers you a streamlined way to make bullet hell/shoot 'em up games in Godot. It aims to be powerful enough to create complex patterns while being simple enough to get into easily. It aims to offer:
+GodotSTG is a simple framework that offers you a streamlined way to make bullet hell/shoot 'em up games in Godot. It aims to be powerful enough to create complex patterns while being simple enough to get into easily. It aims to offer:
 -  A way to create and configure battles with very little coding
 -  Sequenced spawning to change spellcards on the fly
 -  Tons of options to make anything your heart desires
@@ -12,8 +12,13 @@ GodotSTG is a series of state machines that offers you a streamlined way to make
 -  Tons of signals to adapt the plugin into any workflow
 -  Manupulate player and enemy positions (not yet implemented)
 
-# How to use
+# Usage
 You can check out [the wiki](https://github.com/peachey2k2/GodotSTG/wiki) for all the necessary information.
 
-# How to install
+# Installation
 Simply download this repository and put it into your res://addons/` directory.
+
+# Support
+If you have a problem with the plugin, just come to my Discord server and I'll try to help.
+
+[![Discord](https://discordapp.com/api/guilds/1146846558508302366/widget.png?style=banner3)](https://discord.gg/ZuUWPaSrHa)
